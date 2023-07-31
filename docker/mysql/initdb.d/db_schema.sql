@@ -10,11 +10,11 @@ create table movie(
     movie_id int,
     primary key(movie_id),
     is_adult bool default false,
-    original_title varchar(100) not null,
-    kr_title varchar(100),
+    original_title varchar(255) not null,
+    kr_title varchar(255),
     poster_path varchar(255),
     release_date date not null,
-    overview varchar(255)
+    overview text
 );
 create table channel(
     channel_id int auto_increment,
