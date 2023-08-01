@@ -24,14 +24,12 @@ func GetThreads(c *gin.Context) ([]Thread, error) {
 	Threads := make([]Thread, 0)
 	var thread Thread
 	for rows.Next() {
-		_ = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Content,
+		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Content,
 			&thread.Email, &thread.Created_at, &thread.Updated_at)
-	}
-	if err := ErrChecker.Check(err); err != nil {
-		if err != nil {
-			return []Thread{}, err
+		if err := ErrChecker.Check(err); err != nil {
+			Threads = append(Threads, thread)
 		}
-		Threads = append(Threads, thread)
+		return []Thread{}, err
 	}
 	return Threads, nil
 }
