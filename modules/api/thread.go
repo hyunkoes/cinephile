@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
@@ -27,9 +28,26 @@ func GetThreads(c *gin.Context) ([]Thread, error) {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Content,
 			&thread.Email, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
-			Threads = append(Threads, thread)
+			return []Thread{}, err
 		}
-		return []Thread{}, err
+		Threads = append(Threads, thread)
 	}
 	return Threads, nil
+}
+
+func RegistThread(c *gin.Context) error {
+	var reqBody Thread
+	err := c.ShouldBind(&reqBody)
+
+	if ErrChecker.Check(err) != nil {
+		return err
+	}
+	db := storage.DB()
+	_, err = db.Exec(`Insert into thread (channel_id,content,email) values(?,?,?)`, reqBody.Channel_id, reqBody.Content, reqBody.Email)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
+	fmt.Println(reqBody.Content)
+
+	return nil
 }
