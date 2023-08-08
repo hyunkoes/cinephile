@@ -76,3 +76,22 @@ func RegistThread(c *gin.Context) error {
 
 	return nil
 }
+
+func ChangeRecommendThread(c *gin.Context) error {
+	var reqBody RecommendForm
+	err := c.ShouldBind(&reqBody)
+
+	if ErrChecker.Check(err) != nil {
+		return err
+	}
+	db := storage.DB()
+	var is_recommend bool
+	_ = db.QueryRow(`select * from thread_recommend where thread_id = ? and email = ? `, reqBody.Thread_id, reqBody.Email).Scan(&is_recommend)
+	fmt.Println(is_recommend)
+	// Recommend 내역이 없다면 -> row 추가
+
+	// Recommend 상태 -> is_recommend : false
+
+	// Recommend 상태 X -> is_recommend : true
+	return nil
+}
