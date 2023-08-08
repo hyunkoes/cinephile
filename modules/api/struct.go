@@ -21,3 +21,7 @@ type Thread_recommend struct {
 	Updated_at   time.Time `json:"updated_at"`
 	Is_recommend bool      `json:"is_recommend"`
 }
+type RecommendForm struct {
+	Thread_id int    `json:"thread_id"`
+	Email     string `json:"email"`
+}
