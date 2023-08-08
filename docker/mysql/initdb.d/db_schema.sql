@@ -32,7 +32,7 @@ create table thread(
     content text,
     foreign key(channel_id) references channel(channel_id),
     email varchar(100),
-    parent int deafult -1,
+    parent int default -1,
     foreign key(email) references user(email),
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null default current_timestamp on update current_timestamp
@@ -43,7 +43,7 @@ create table thread_recommend(
     is_recommended bool default false,
     foreign key(thread_id) references thread(thread_id),
     foreign key(email) references user(email)
-)
+);
 create table genre(
     movie_id int,
     foreign key(movie_id) references movie(movie_id),
