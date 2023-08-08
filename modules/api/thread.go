@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -85,13 +86,29 @@ func ChangeRecommendThread(c *gin.Context) error {
 		return err
 	}
 	db := storage.DB()
-	var is_recommend bool
-	_ = db.QueryRow(`select * from thread_recommend where thread_id = ? and email = ? `, reqBody.Thread_id, reqBody.Email).Scan(&is_recommend)
-	fmt.Println(is_recommend)
-	// Recommend 내역이 없다면 -> row 추가
-
-	// Recommend 상태 -> is_recommend : false
-
-	// Recommend 상태 X -> is_recommend : true
+	var is_recommended bool
+	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and email = ? `, reqBody.Thread_id, reqBody.Email).Scan(&is_recommended)
+	if err == sql.ErrNoRows {
+		// No row -> is_recommended : true
+		_, err = db.Exec(`Insert into thread_recommend values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
+		if err := ErrChecker.Check(err); err != nil {
+			return err
+		}
+		// row 추가
+		return nil
+	}
+	// Is_recommended -> is_recommended : false
+	if is_recommended == true {
+		_, err = db.Exec(`Update thread_recommend set is_recommended = false where thread_id = ? and email = ?`, reqBody.Thread_id, reqBody.Email)
+		if err := ErrChecker.Check(err); err != nil {
+			return err
+		}
+		return nil
+	}
+	// Not is_recommneded -> is_recommend : true
+	_, err = db.Exec(`Update thread_recommend set is_recommended = true where thread_id = ? and email = ?`, reqBody.Thread_id, reqBody.Email)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
 	return nil
 }
