@@ -25,11 +25,11 @@ func registThread(c *gin.Context) {
 }
 
 // Movie R
-func getMovie(c *gin.Context) {
-	movie, err := GetMovie(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil, "movie": movie})
-	}
-}
+// func getMovie(c *gin.Context) {
+// 	movie, err := GetMovie(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil, "movie": movie})
+// 	}
+// }
