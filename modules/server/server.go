@@ -42,7 +42,7 @@ func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	// api.PUT("/thread", updateThread)
+	api.PUT("/recommend_thread", changeRecommendThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/

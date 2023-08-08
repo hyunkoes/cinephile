@@ -23,6 +23,14 @@ func registThread(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
+func changeRecommendThread(c *gin.Context) {
+	err := ChangeRecommendThread(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil})
+	}
+}
 
 // Movie R
 // func getMovie(c *gin.Context) {
