@@ -43,7 +43,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	if length == 0 {
 		return []Thread_recommend{}, errors.New("Nothing to show")
 	}
-	rows, err := db.Query(`select * from thread left join thread_recommend on thread.email = thread_recommend.email`)
+	rows, err := db.Query(`select thread.*, thread_recommend.is_recommended from thread left join thread_recommend on thread.email = thread_recommend.email`)
 	if err := ErrChecker.Check(err); err != nil {
 		return []Thread_recommend{}, err
 	}
