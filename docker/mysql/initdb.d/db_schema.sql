@@ -42,7 +42,9 @@ create table thread_recommend(
     email varchar(100),
     is_recommended bool default false,
     foreign key(thread_id) references thread(thread_id),
-    foreign key(email) references user(email)
+    foreign key(email) references user(email),
+    created_at timestamp not null default current_timestamp,
+    updated_at timestamp not null default current_timestamp on update current_timestamp
 );
 create table genre(
     movie_id int,
