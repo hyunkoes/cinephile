@@ -30,19 +30,19 @@ func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	api.GET("/threads", getThreads)
+	api.GET("/list/threads", getThreads)
 	/*  Reply			200 -> thread detail
 	400 -> No more thread
 	*/
-	// api.GET("/thread/:thread_id", getThread)
+	api.GET("/threads", getThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.POST("/thread", registThread)
+	api.POST("/threads", registThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.PUT("/recommend_thread", changeRecommendThread)
+	api.PUT("/threads/likes", changeRecommendThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/

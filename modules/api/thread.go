@@ -8,6 +8,7 @@ import (
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
 
+	"github.com/djimenez/iconv-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,6 +36,98 @@ func GetThreads(c *gin.Context) ([]Thread, error) {
 	}
 	return Threads, nil
 }
+func GetThread(c *gin.Context) (Thread_detail, error) {
+	thread_id, valid := c.GetQuery("thread_id")
+	if !valid {
+		return Thread_detail{}, errors.New("Invalid query string")
+	}
+	db := storage.DB()
+	query := `
+	SELECT
+		t.thread_id,
+		t.channel_id,
+		m.original_title,
+		m.kr_title,
+		m.movie_id,
+		t.email,
+		t.parent,
+		t.content,
+		tr.is_recommended,
+		t.updated_at
+	FROM
+		thread AS t
+	LEFT JOIN
+		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	LEFT JOIN
+		channel AS c ON t.channel_id = c.channel_id
+	LEFT JOIN
+		movie AS m ON c.movie_id = m.movie_id
+	WHERE
+		t.thread_id = ` + thread_id + `
+	ORDER BY
+		t.thread_id;
+	`
+	child_query := `
+	SELECT
+		t.thread_id,
+		t.channel_id,
+		m.original_title,
+		m.kr_title,
+		m.movie_id,
+		t.email,
+		t.parent,
+		t.content,
+		tr.is_recommended,
+		t.updated_at
+	FROM
+		thread AS t
+	LEFT JOIN
+		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	LEFT JOIN
+		channel AS c ON t.channel_id = c.channel_id
+	LEFT JOIN
+		movie AS m ON c.movie_id = m.movie_id
+	WHERE
+		t.parent = ` + thread_id + `
+	ORDER BY
+		t.thread_id;
+	`
+	var thread Thread_detail
+	var is_recommended sql.NullBool
+	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel_id, &thread.Self.Original_title,
+		&thread.Self.Kr_title, &thread.Self.Movie_id, &thread.Self.Email, &thread.Self.Parent, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+	if !is_recommended.Valid {
+		thread.Self.Is_recommended = false
+	} else {
+		thread.Self.Is_recommended = is_recommended.Bool
+	}
+	fmt.Println("1")
+	rows, err := db.Query(child_query)
+	if err := ErrChecker.Check(err); err != nil {
+		return Thread_detail{}, err
+	}
+	defer rows.Close()
+
+	var child_thread Thread
+	children := make([]Thread, 0)
+	fmt.Println("2")
+	for rows.Next() {
+		fmt.Println("row")
+		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel_id, &child_thread.Original_title, &child_thread.Kr_title, &child_thread.Movie_id,
+			&child_thread.Email, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
+		if err := ErrChecker.Check(err); err != nil {
+			return Thread_detail{}, err
+		}
+		if !is_recommended.Valid {
+			child_thread.Is_recommended = false
+		} else {
+			child_thread.Is_recommended = is_recommended.Bool
+		}
+		children = append(children, child_thread)
+	}
+	thread.Child = append(thread.Child, children...)
+	return thread, nil
+}
 
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	db := storage.DB()
@@ -43,19 +136,52 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	if length == 0 {
 		return []Thread_recommend{}, errors.New("Nothing to show")
 	}
-	rows, err := db.Query(`select thread.*, thread_recommend.is_recommended from thread left join thread_recommend on thread.email = thread_recommend.email`)
+	query := `
+	SELECT
+		t.thread_id,
+		t.channel_id,
+		m.original_title,
+		m.kr_title,
+		m.movie_id,
+		t.email,
+		t.parent,
+		t.content,
+		tr.is_recommended,
+		t.updated_at
+	FROM
+		thread AS t
+	LEFT JOIN
+		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	LEFT JOIN
+		channel AS c ON t.channel_id = c.channel_id
+	LEFT JOIN
+		movie AS m ON c.movie_id = m.movie_id
+	ORDER BY
+		t.updated_at DESC;
+	`
+	rows, err := db.Query(query)
+
 	if err := ErrChecker.Check(err); err != nil {
 		return []Thread_recommend{}, err
 	}
 	defer rows.Close()
 	Threads := make([]Thread_recommend, 0)
 	var thread Thread_recommend
+	var is_recommended sql.NullBool
 	for rows.Next() {
-		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Content,
-			&thread.Email, &thread.Parent, &thread.Created_at, &thread.Updated_at, &thread.Is_recommend)
+		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Original_title,
+			&thread.Kr_title, &thread.Movie_id, &thread.Email, &thread.Parent, &thread.Content, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread_recommend{}, err
 		}
+		if !is_recommended.Valid {
+			thread.Is_recommended = false
+		} else {
+			thread.Is_recommended = is_recommended.Bool
+		}
+		out, _ := iconv.ConvertString(string(thread.Kr_title), "euc-kr", "utf-8")
+		fmt.Println(out)
+		fmt.Println(thread.Kr_title)
 		Threads = append(Threads, thread)
 	}
 	return Threads, nil
@@ -63,17 +189,20 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 
 func RegistThread(c *gin.Context) error {
 	var reqBody Thread
+	user := c.GetHeader("user")
 	err := c.ShouldBind(&reqBody)
 
 	if ErrChecker.Check(err) != nil {
 		return err
 	}
+	if reqBody.Parent == 0 {
+		reqBody.Parent = -1
+	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email) values(?,?,?)`, reqBody.Channel_id, reqBody.Content, reqBody.Email)
+	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel_id, reqBody.Content, user, reqBody.Parent)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-	fmt.Println(reqBody.Content)
 
 	return nil
 }
@@ -88,9 +217,10 @@ func ChangeRecommendThread(c *gin.Context) error {
 	db := storage.DB()
 	var is_recommended bool
 	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and email = ? `, reqBody.Thread_id, reqBody.Email).Scan(&is_recommended)
+
 	if err == sql.ErrNoRows {
 		// No row -> is_recommended : true
-		_, err = db.Exec(`Insert into thread_recommend values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
+		_, err = db.Exec(`Insert into thread_recommend (thread_id, email, is_recommended) values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}

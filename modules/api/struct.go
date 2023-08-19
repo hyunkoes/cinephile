@@ -1,27 +1,43 @@
 package api
 
-import "time"
+import (
+	"time"
+)
 
 type Thread struct {
-	Thread_id  int       `json:"thread_id"`
-	Channel_id int       `json:"channel_id"`
-	Content    string    `json:"content"`
-	Email      string    `json:"email"`
-	Parent     int       `json:"parent"`
-	Created_at time.Time `json:"created_at"`
-	Updated_at time.Time `json:"updated_at"`
+	Thread_id      int       `json:"threadId"`
+	Channel_id     int       `json:"channelId"`
+	Original_title string    `json:"originalTitle"`
+	Kr_title       string    `json:"krTitle"`
+	Movie_id       int       `json:"movieId"`
+	Email          string    `json:"email"`
+	Parent         int       `json:"parent,default=-1"`
+	Content        string    `json:"content"`
+	Created_at     time.Time `json:"createdAt"`
+	Updated_at     time.Time `json:"updatedAt"`
+	Is_recommended bool      `json:"isRecommended"`
 }
+
+type Thread_detail struct {
+	Self   Thread   `json:"self"`
+	Parent Thread   `json:"parent"`
+	Child  []Thread `json:"child"`
+}
+
 type Thread_recommend struct {
-	Thread_id    int       `json:"thread_id"`
-	Channel_id   int       `json:"channel_id"`
-	Content      string    `json:"content"`
-	Email        string    `json:"email"`
-	Parent       int       `json:"parent"`
-	Created_at   time.Time `json:"created_at"`
-	Updated_at   time.Time `json:"updated_at"`
-	Is_recommend bool      `json:"is_recommend"`
+	Thread_id      int       `json:"threadId"`
+	Channel_id     int       `json:"channelId"`
+	Original_title string    `json:"originalTitle"`
+	Kr_title       string    `json:"krTitle"`
+	Movie_id       int       `json:"movieId"`
+	Email          string    `json:"email"`
+	Parent         int       `json:"parent,default=-1"`
+	Content        string    `json:"content"`
+	Created_at     time.Time `json:"createdAt"`
+	Updated_at     time.Time `json:"updatedAt"`
+	Is_recommended bool      `json:"isRecommended"`
 }
 type RecommendForm struct {
-	Thread_id int    `json:"thread_id"`
+	Thread_id int    `json:"threadId"`
 	Email     string `json:"email"`
 }
