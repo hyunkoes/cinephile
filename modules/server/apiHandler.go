@@ -6,37 +6,132 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// func getLogin(c *gin.Context) {
+// 	uid, token, err := LoginUser(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil, "token": token, "uid": uid})
+// 	}
+// }
+// func postModifyPW(c *gin.Context) {
+// 	err := ModifyPW(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil})
+// 	}
+// }
+// func postModifyProfile(c *gin.Context) {
+// 	err := ModifyProfile(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil})
+// 	}
+// }
+// func postLogout(c *gin.Context) {
+// 	err := LogoutUser(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil})
+// 	}
+// }
+// func postRegister(c *gin.Context) {
+// 	err := RegisterUser(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil})
+// 	}
+// }
+// func postFindPW(c *gin.Context) {
+// 	err := FindUserPW(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil})
+// 	}
+// }
+// func postFindID(c *gin.Context) {
+// 	id, err := FindUserId(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil, "id": id})
+// 	}
+// }
+// func getProjects(c *gin.Context) {
+// 	posts, err := GetProjectList(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil, "projects": posts})
+// 	}
+// }
+
+//	func getProject(c *gin.Context) {
+//		pd, err := GetProjectDetail(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil, "projects": pd})
+//		}
+//	}
+//
+//	func getCategory(c *gin.Context) {
+//		posts, err := GetCategory(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil, "projects": posts})
+//		}
+//	}
+//
+//	func postAddProject(c *gin.Context) {
+//		pid, err := AddProject(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil, "pid": pid})
+//		}
+//	}
+//
+//	func postPermitJoin(c *gin.Context) {
+//		err := PermitProject(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil})
+//		}
+//	}
+//
+//	func postDenyJoin(c *gin.Context) {
+//		err := DenyProject(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil})
+//		}
+//	}
+//
+//	func postJoin(c *gin.Context) {
+//		err := JoinProject(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil})
+//		}
+//	}
+
 // Thread CRUD
 func getThreads(c *gin.Context) {
-	threads, err := GetThreadsWithRecommend(c)
+	posts, err := GetThreads(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "threads": threads})
-	}
-}
-func getThread(c *gin.Context) {
-	thread, err := GetThread(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil, "thread": thread})
-	}
-}
-func registThread(c *gin.Context) {
-	err := RegistThread(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil})
-	}
-}
-func changeRecommendThread(c *gin.Context) {
-	err := ChangeRecommendThread(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil})
+		c.JSON(200, gin.H{"error": nil, "projects": posts})
 	}
 }
 
@@ -47,15 +142,5 @@ func getMovie(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
 		c.JSON(200, gin.H{"error": nil, "movie": movie})
-	}
-}
-
-// Movie R
-func getMovies(c *gin.Context) {
-	movie, err := GetMovies(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil, "movies": movie})
 	}
 }

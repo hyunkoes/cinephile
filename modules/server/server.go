@@ -30,19 +30,19 @@ func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	api.GET("/list/threads", getThreads)
+	api.GET("/threads", getThreads)
 	/*  Reply			200 -> thread detail
 	400 -> No more thread
 	*/
-	api.GET("/threads", getThread)
+	// api.GET("/thread/:thread_id", getThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.POST("/threads", registThread)
+	// api.POST("/thread", registThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.PUT("/threads/likes", changeRecommendThread)
+	// api.PUT("/thread", updateThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
@@ -96,7 +96,7 @@ func RegistMovieApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	// api.GET("/movie", getMovie)
+	api.GET("/movie", getMovie)
 }
 
 func RegistChannelApiHandler(api *gin.RouterGroup) {
