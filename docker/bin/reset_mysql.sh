@@ -4,6 +4,6 @@ id=$(echo "$output" | awk '{print $1}')
 
 docker rm -f $id
 
-rm -rf ../db_volume
+sudo rm -rf ../db_volume
 
 docker-compose -f ../docker-compose.yaml up --force-recreate --build 
