@@ -11,7 +11,7 @@ services:
     volumes:
      - ./db_volume:/var/lib/mysql
      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
-    #  - ./mysql/my.cnf:/etc/my.cnf
+     - ./mysql/my.cnf:/etc/my.cnf
     ports:
      - '3306:3306'
     command:

@@ -29,8 +29,8 @@ def get_movie_list(token, page):
     return  response['results']
 
 def movies_to_sql(movies):
-    movie_sql = 'INSERT INTO MOVIE VALUES ({},{},"{}","{}","{}","{}","{}");\n'
-    genre_sql = 'INSERT INTO GENRE VALUES ({}, {});\n'
+    movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}","{}","{}");\n'
+    genre_sql = 'INSERT INTO genre VALUES ({}, {});\n'
     movie_sql_total = ""
     genre_sql_total = ""
     for movie in movies :
