@@ -29,12 +29,13 @@ def get_movie_list(token, page):
     return  response['results']
 
 def movies_to_sql(movies):
-    movie_sql = 'INSERT INTO MOVIE VALUES ({},{},"{}","{}","{}",{},"{}");\n'
+    movie_sql = 'INSERT INTO MOVIE VALUES ({},{},"{}","{}","{}","{}","{}");\n'
     genre_sql = 'INSERT INTO GENRE VALUES ({}, {});\n'
     movie_sql_total = ""
     genre_sql_total = ""
     for movie in movies :
-        movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'],movie['title'] or '',movie['poster_path'],movie['release_date'],movie['overview'])
+        movie['overview'] = movie['overview'].replace('"', "'")
+        movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'],movie['title'] or '',movie['poster_path'],movie.get('release_date', ''),movie['overview'])
         for genre in movie['genre_ids']:
             genre_sql_total += genre_sql.format(movie['id'],genre)
     return movie_sql_total + genre_sql_total
@@ -51,7 +52,7 @@ def run_script():
         movies = movies+next_movies
         time.sleep(1)
     sql = movies_to_sql(movies)
-    with open('../mysql/popular_movie.sql','w+') as f:
+    with open('../mysql/initdb.d/popular_movie.sql','w+') as f:
         f.write(sql)
     
 
