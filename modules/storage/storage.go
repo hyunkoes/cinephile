@@ -14,7 +14,7 @@ func init() {
 
 }
 func GetConn() *sql.DB {
-	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true")
+	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true&charset=utf8")
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +22,7 @@ func GetConn() *sql.DB {
 }
 func connDB() {
 	fmt.Println("CONN DB FUNC")
-	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true")
+	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true&charset=utf8")
 	if err != nil {
 		panic(err)
 	}
