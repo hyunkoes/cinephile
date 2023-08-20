@@ -24,6 +24,10 @@ type Thread_detail struct {
 	Child  []Thread `json:"child"`
 }
 
+type Thread_list struct {
+	List []Thread `json:"list"`
+}
+
 type Thread_recommend struct {
 	Thread_id      int       `json:"threadId"`
 	Channel_id     int       `json:"channelId"`
