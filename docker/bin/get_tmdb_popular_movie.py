@@ -36,15 +36,14 @@ def movies_to_sql(movies):
     genre_sql_total = ""
     channel_sql_total = ""
     for movie in movies :
-        movie['overview'] = movie['overview'].replace('"', "'")
+        replace = movie['overview'].replace('"', "'")
         date = movie.get('release_date', -1)
         if ( date == -1 ):
             date = ""
         else :
             date = '"'+date+'"'
-        movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'],movie['title'] or '',movie['poster_path'],date,movie['overview'])
+        movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'],movie['title'] or '',movie['poster_path'],date,replace)
         channel_sql_total += channel_sql.format(movie['id'])
-        print(channel_sql.format(movie['id']))
         for genre in movie['genre_ids']:
             genre_sql_total += genre_sql.format(movie['id'],genre)
     return movie_sql_total + genre_sql_total + channel_sql_total
