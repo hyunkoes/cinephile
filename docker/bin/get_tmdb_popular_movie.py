@@ -31,8 +31,10 @@ def get_movie_list(token, page):
 def movies_to_sql(movies):
     movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}",{},"{}");\n'
     genre_sql = 'INSERT INTO genre VALUES ({}, {});\n'
+    channel_sql = 'INSERT INTO channel (movie_id) VALUES ({});\n'
     movie_sql_total = ""
     genre_sql_total = ""
+    channel_sql_total = ""
     for movie in movies :
         movie['overview'] = movie['overview'].replace('"', "'")
         date = movie.get('release_date', -1)
@@ -41,16 +43,18 @@ def movies_to_sql(movies):
         else :
             date = '"'+date+'"'
         movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'],movie['title'] or '',movie['poster_path'],date,movie['overview'])
+        channel_sql_total += channel_sql.format(movie['id'])
+        print(channel_sql.format(movie['id']))
         for genre in movie['genre_ids']:
             genre_sql_total += genre_sql.format(movie['id'],genre)
-    return movie_sql_total + genre_sql_total
+    return movie_sql_total + genre_sql_total + channel_sql_total
 
 
 
 def run_script():
     token = get_token()
     movies = []
-    for i in range(1, 100):
+    for i in range(1, 3):
         next_movies = get_movie_list(token,i)
         if ( len(next_movies) == 0 ):
             break
