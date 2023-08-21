@@ -54,7 +54,7 @@ def movies_to_sql(movies):
 def run_script():
     token = get_token()
     movies = []
-    for i in range(1, 3):
+    for i in range(1, 100):
         next_movies = get_movie_list(token,i)
         if ( len(next_movies) == 0 ):
             break
