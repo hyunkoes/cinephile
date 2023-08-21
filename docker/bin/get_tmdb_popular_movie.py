@@ -29,19 +29,14 @@ def get_movie_list(token, page):
     return  response['results']
 
 def movies_to_sql(movies):
-    
-    movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}",{},"{}");\n'
+    movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}","{}","{}");\n'
     genre_sql = 'INSERT INTO genre VALUES ({}, {});\n'
     channel_sql = 'INSERT INTO channel (movie_id) VALUES ({});\n'
     movie_sql_total = ""
     genre_sql_total = ""
     channel_sql_total = ""
     for movie in movies :
-        date = movie.get('release_date', -1)
-        if ( date == -1 ):
-            date = ""
-        else :
-            date = '"'+date+'"'
+        date = movie.get('release_date', '').replace('"','')
         movie_sql_total += movie_sql.format(movie['id'],movie['adult'],movie['original_title'].replace('"', "'"),movie['title'].replace('"', "'") or '',movie['poster_path'],date,movie['overview'].replace('"', "'"))
         channel_sql_total += channel_sql.format(movie['id'])
         for genre in movie['genre_ids']:
