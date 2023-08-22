@@ -159,7 +159,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	if cursor == "-1" {
+	if cursor == "-1" && !valid {
 		cursor = "2147483647"
 	}
 	if !valid {
