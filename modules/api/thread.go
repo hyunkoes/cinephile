@@ -275,3 +275,37 @@ func ChangeRecommendThread(c *gin.Context) error {
 	}
 	return nil
 }
+
+func DeleteThread(c *gin.Context) error {
+	thread_id := c.GetHeader("thread_id")
+	user := c.GetHeader("user")
+	query := `
+	SELECT
+		count(*)
+	FROM 
+		thread
+	WHERE
+		thread_id = ` + thread_id + `
+		and 
+		email = "` + user + `"
+	`
+	db := storage.DB()
+	var length int
+	_ = db.QueryRow(query).Scan(&length)
+	if length == 0 {
+		return errors.New("Incorrect user and thread")
+	}
+	query = `
+	DELETE FROM
+		thread
+	WHERE 
+		thread_id = ` + thread_id + `
+		and 
+		email = "` + user + `"
+	`
+	_, err := db.Exec(query)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
+	return nil
+}

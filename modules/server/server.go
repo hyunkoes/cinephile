@@ -46,7 +46,7 @@ func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	// api.DELETE("/thread", deleteThread)
+	api.DELETE("/threads", deleteThread)
 	/*  Reply			200 -> like thread
 	else -> unknown error
 	*/
