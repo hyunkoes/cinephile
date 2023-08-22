@@ -59,3 +59,18 @@ func getMovies(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "movies": movie})
 	}
 }
+
+/*
+	 Channel list
+		@ type = new / hot
+			@ new is ordering latest thread
+			@ hot is ordering hotest thread
+*/
+func getChannels(c *gin.Context) {
+	channels, err := GetChannels(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "channels": channels})
+	}
+}
