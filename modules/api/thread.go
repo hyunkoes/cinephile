@@ -3,12 +3,10 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
 
-	"github.com/djimenez/iconv-go"
 	"github.com/gin-gonic/gin"
 )
 
@@ -101,7 +99,6 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	} else {
 		thread.Self.Is_recommended = is_recommended.Bool
 	}
-	fmt.Println("1")
 	rows, err := db.Query(child_query)
 	if err := ErrChecker.Check(err); err != nil {
 		return Thread_detail{}, err
@@ -110,9 +107,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 
 	var child_thread Thread
 	children := make([]Thread, 0)
-	fmt.Println("2")
 	for rows.Next() {
-		fmt.Println("row")
 		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel_id, &child_thread.Original_title, &child_thread.Kr_title, &child_thread.Movie_id,
 			&child_thread.Email, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
@@ -131,6 +126,13 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	db := storage.DB()
+	cursor, valid := c.GetQuery("cursor")
+	if cursor == "-1" {
+		cursor = "2147483647"
+	}
+	if !valid {
+		return []Thread_recommend{}, errors.New("No cursor id")
+	}
 	var length int
 	_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
 	if length == 0 {
@@ -156,8 +158,10 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
+	WHERE t.thread_id < ` + cursor + `
 	ORDER BY
-		t.updated_at DESC;
+		t.thread_id DESC
+	LIMIT 10;
 	`
 	rows, err := db.Query(query)
 
@@ -179,9 +183,6 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 		} else {
 			thread.Is_recommended = is_recommended.Bool
 		}
-		out, _ := iconv.ConvertString(string(thread.Kr_title), "euc-kr", "utf-8")
-		fmt.Println(out)
-		fmt.Println(thread.Kr_title)
 		Threads = append(Threads, thread)
 	}
 	return Threads, nil
