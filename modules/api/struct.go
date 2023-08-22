@@ -45,3 +45,6 @@ type RecommendForm struct {
 	Thread_id int    `json:"threadId"`
 	Email     string `json:"email"`
 }
+
+type Channel struct {
+}

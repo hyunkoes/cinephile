@@ -61,10 +61,9 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
 	WHERE
-		t.thread_id = ` + thread_id + `
-	ORDER BY
-		t.thread_id;
+		t.thread_id = ` + thread_id + `;
 	`
+
 	child_query := `
 	SELECT
 		t.thread_id,
@@ -103,10 +102,43 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	if err := ErrChecker.Check(err); err != nil {
 		return Thread_detail{}, err
 	}
-	defer rows.Close()
+	parent_id := thread.Self.Parent
+	parent_query := `
+	SELECT
+		t.thread_id,
+		t.channel_id,
+		m.original_title,
+		m.kr_title,
+		m.movie_id,
+		t.email,
+		t.parent,
+		t.content,
+		tr.is_recommended,
+		t.updated_at
+	FROM
+		thread AS t
+	LEFT JOIN
+		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	LEFT JOIN
+		channel AS c ON t.channel_id = c.channel_id
+	LEFT JOIN
+		movie AS m ON c.movie_id = m.movie_id
+	WHERE
+		t.thread_id = ` + string(parent_id) + `;`
+	if parent_id != -1 {
+		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel_id, &thread.Parent.Original_title,
+			&thread.Parent.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Email, &thread.Parent.Parent, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
+		if !is_recommended.Valid {
+			thread.Parent.Is_recommended = false
+		} else {
+			thread.Parent.Is_recommended = is_recommended.Bool
+		}
+	}
 
 	var child_thread Thread
-	children := make([]Thread, 0)
+	thread.Child = make([]Thread, 0)
+
+	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel_id, &child_thread.Original_title, &child_thread.Kr_title, &child_thread.Movie_id,
 			&child_thread.Email, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
@@ -118,9 +150,9 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 		} else {
 			child_thread.Is_recommended = is_recommended.Bool
 		}
-		children = append(children, child_thread)
+		thread.Child = append(thread.Child, child_thread)
 	}
-	thread.Child = append(thread.Child, children...)
+
 	return thread, nil
 }
 
