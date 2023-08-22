@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
@@ -159,11 +160,9 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	if cursor == "-1" && !valid {
+	fmt.Println(cursor, valid)
+	if cursor == "-1" || !valid {
 		cursor = "2147483647"
-	}
-	if !valid {
-		return []Thread_recommend{}, errors.New("No cursor id")
 	}
 	var length int
 	_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
