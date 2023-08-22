@@ -13,7 +13,7 @@ create table movie(
     original_title varchar(255) not null,
     kr_title varchar(255),
     poster_path varchar(255),
-    release_date date not null,
+    release_date date,
     overview text
 );
 create table channel(
