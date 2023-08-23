@@ -11,30 +11,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetThreads(c *gin.Context) ([]Thread, error) {
-	db := storage.DB()
-	var length int
-	_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
-	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show")
-	}
-	rows, err := db.Query(`select * from thread`)
-	if err := ErrChecker.Check(err); err != nil {
-		return []Thread{}, err
-	}
-	defer rows.Close()
-	Threads := make([]Thread, 0)
-	var thread Thread
-	for rows.Next() {
-		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Content,
-			&thread.Email, &thread.Parent, &thread.Created_at, &thread.Updated_at)
-		if err := ErrChecker.Check(err); err != nil {
-			return []Thread{}, err
-		}
-		Threads = append(Threads, thread)
-	}
-	return Threads, nil
-}
+//	func GetThreads(c *gin.Context) ([]Thread, error) {
+//		db := storage.DB()
+//		var length int
+//		_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
+//		if length == 0 {
+//			return []Thread{}, errors.New("Nothing to show")
+//		}
+//		rows, err := db.Query(`select * from thread`)
+//		if err := ErrChecker.Check(err); err != nil {
+//			return []Thread{}, err
+//		}
+//		defer rows.Close()
+//		Threads := make([]Thread, 0)
+//		var thread Thread
+//		for rows.Next() {
+//			err = rows.Scan(&thread.Thread_id, &thread.Channel.Id, &thread.Content,
+//				&thread.Author.Id, &thread.Parent, &thread.Created_at, &thread.Updated_at)
+//			if err := ErrChecker.Check(err); err != nil {
+//				return []Thread{}, err
+//			}
+//			Threads = append(Threads, thread)
+//		}
+//		return Threads, nil
+//	}
 func GetThread(c *gin.Context) (Thread_detail, error) {
 	thread_id, valid := c.GetQuery("thread_id")
 	if !valid {
@@ -92,8 +92,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	`
 	var thread Thread_detail
 	var is_recommended sql.NullBool
-	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel_id, &thread.Self.Original_title,
-		&thread.Self.Kr_title, &thread.Self.Movie_id, &thread.Self.Email, &thread.Self.Parent, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Id, &thread.Self.Channel.Original_title,
+		&thread.Self.Channel.Kr_title, &thread.Self.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
 	if !is_recommended.Valid {
 		thread.Self.Is_recommended = false
 	} else {
@@ -127,8 +127,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	WHERE
 		t.thread_id = ` + string(parent_id) + `;`
 	if parent_id != -1 {
-		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel_id, &thread.Parent.Original_title,
-			&thread.Parent.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Email, &thread.Parent.Parent, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
+		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Id, &thread.Parent.Channel.Original_title,
+			&thread.Parent.Channel.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
 		if !is_recommended.Valid {
 			thread.Parent.Is_recommended = false
 		} else {
@@ -141,8 +141,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel_id, &child_thread.Original_title, &child_thread.Kr_title, &child_thread.Movie_id,
-			&child_thread.Email, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
+		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Id, &child_thread.Channel.Original_title, &child_thread.Channel.Kr_title, &child_thread.Movie_id,
+			&child_thread.Author.Id, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return Thread_detail{}, err
 		}
@@ -157,7 +157,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	return thread, nil
 }
 
-func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
+func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
 	fmt.Println(cursor, valid)
@@ -167,7 +167,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	var length int
 	_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
 	if length == 0 {
-		return []Thread_recommend{}, errors.New("Nothing to show")
+		return []Thread{}, errors.New("Nothing to show")
 	}
 	query := `
 	SELECT
@@ -176,6 +176,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 		m.original_title,
 		m.kr_title,
 		m.movie_id,
+		m.poster_path,
 		t.email,
 		t.parent,
 		t.content,
@@ -197,17 +198,17 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread_recommend, error) {
 	rows, err := db.Query(query)
 
 	if err := ErrChecker.Check(err); err != nil {
-		return []Thread_recommend{}, err
+		return []Thread{}, err
 	}
 	defer rows.Close()
-	Threads := make([]Thread_recommend, 0)
-	var thread Thread_recommend
+	Threads := make([]Thread, 0)
+	var thread Thread
 	var is_recommended sql.NullBool
 	for rows.Next() {
-		err = rows.Scan(&thread.Thread_id, &thread.Channel_id, &thread.Original_title,
-			&thread.Kr_title, &thread.Movie_id, &thread.Email, &thread.Parent, &thread.Content, &is_recommended, &thread.Updated_at)
+		err = rows.Scan(&thread.Thread_id, &thread.Channel.Id, &thread.Channel.Original_title,
+			&thread.Channel.Kr_title, &thread.Movie_id, &thread.Channel.Poster, &thread.Author.Id, &thread.Parent, &thread.Content, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
-			return []Thread_recommend{}, err
+			return []Thread{}, err
 		}
 		if !is_recommended.Valid {
 			thread.Is_recommended = false
@@ -231,7 +232,7 @@ func RegistThread(c *gin.Context) error {
 		reqBody.Parent = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel_id, reqBody.Content, user, reqBody.Parent)
+	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel.Id, reqBody.Content, user, reqBody.Parent)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}

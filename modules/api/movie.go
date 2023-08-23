@@ -2,22 +2,11 @@ package api
 
 import (
 	"fmt"
-	"time"
 
 	"cinephile/modules/storage"
 
 	"github.com/gin-gonic/gin"
 )
-
-type Movie struct {
-	Movie_id       int       `json:"movie_id"`
-	Is_adult       bool      `json:"is_adult"`
-	Original_title string    `json:"original_title"`
-	Kr_title       string    `json:"kr_title"`
-	Poster_path    string    `json:"poster_path"`
-	Release_date   time.Time `json:"release_date"`
-	Overview       string    `json:"overview"`
-}
 
 func GetMovies(c *gin.Context) ([]Movie, error) {
 	db := storage.DB()
