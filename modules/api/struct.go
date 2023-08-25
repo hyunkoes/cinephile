@@ -7,7 +7,7 @@ import (
 type Thread struct {
 	Thread_id      int       `json:"threadId"`
 	Movie_id       int       `json:"movieId"`
-	Parent         int       `json:"parent,default=-1"`
+	Parent_id      int       `json:"parentId,default=-1"`
 	Content        string    `json:"content"`
 	Created_at     time.Time `json:"createdAt"`
 	Updated_at     time.Time `json:"updatedAt"`
@@ -23,10 +23,11 @@ type Thread_detail struct {
 }
 
 type Channel struct {
-	Id             int    `json:"id"`
-	Original_title string `json:"originalTitle"`
-	Kr_title       string `json:"krTitle"`
-	Poster         string `json:"poster"`
+	Channel_id      int   `json:"channelId"`
+	Movie           Movie `json:"Movie"`
+	Thread_count    int   `json:"threadCount"`
+	Subscribe_count int   `json:"subscribeCount"`
+	Like_count      int   `json:"likeCount"`
 }
 type Movie struct {
 	Movie_id       int       `json:"movieId"`

@@ -104,11 +104,11 @@ func RegistChannelApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	api.GET("/channels", getChannels)
+	api.GET("/channels", getChannel)
 	/*  Reply			200 -> thread detail
 	400 -> No more thread
 	*/
-	// api.GET("/channel", getThread)
+	api.GET("/list/channels", getChannels)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/

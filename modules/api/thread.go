@@ -92,8 +92,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	`
 	var thread Thread_detail
 	var is_recommended sql.NullBool
-	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Id, &thread.Self.Channel.Original_title,
-		&thread.Self.Channel.Kr_title, &thread.Self.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Channel_id, &thread.Self.Channel.Movie.Original_title,
+		&thread.Self.Channel.Movie.Kr_title, &thread.Self.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent_id, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
 	if !is_recommended.Valid {
 		thread.Self.Is_recommended = false
 	} else {
@@ -103,7 +103,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	if err := ErrChecker.Check(err); err != nil {
 		return Thread_detail{}, err
 	}
-	parent_id := thread.Self.Parent
+	parent_id := thread.Self.Parent_id
 	parent_query := `
 	SELECT
 		t.thread_id,
@@ -127,8 +127,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	WHERE
 		t.thread_id = ` + string(parent_id) + `;`
 	if parent_id != -1 {
-		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Id, &thread.Parent.Channel.Original_title,
-			&thread.Parent.Channel.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
+		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Channel_id, &thread.Parent.Channel.Movie.Original_title,
+			&thread.Parent.Channel.Movie.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent_id, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
 		if !is_recommended.Valid {
 			thread.Parent.Is_recommended = false
 		} else {
@@ -141,8 +141,8 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Id, &child_thread.Channel.Original_title, &child_thread.Channel.Kr_title, &child_thread.Movie_id,
-			&child_thread.Author.Id, &child_thread.Parent, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
+		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Channel_id, &child_thread.Channel.Movie.Original_title, &child_thread.Channel.Movie.Kr_title, &child_thread.Movie_id,
+			&child_thread.Author.Id, &child_thread.Parent_id, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return Thread_detail{}, err
 		}
@@ -205,8 +205,8 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 	var thread Thread
 	var is_recommended sql.NullBool
 	for rows.Next() {
-		err = rows.Scan(&thread.Thread_id, &thread.Channel.Id, &thread.Channel.Original_title,
-			&thread.Channel.Kr_title, &thread.Movie_id, &thread.Channel.Poster, &thread.Author.Id, &thread.Parent, &thread.Content, &is_recommended, &thread.Updated_at)
+		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
+			&thread.Channel.Movie.Kr_title, &thread.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err
 		}
@@ -228,11 +228,11 @@ func RegistThread(c *gin.Context) error {
 	if ErrChecker.Check(err) != nil {
 		return err
 	}
-	if reqBody.Parent == 0 {
-		reqBody.Parent = -1
+	if reqBody.Parent_id == 0 {
+		reqBody.Parent_id = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel.Id, reqBody.Content, user, reqBody.Parent)
+	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel.Channel_id, reqBody.Content, user, reqBody.Parent_id)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}

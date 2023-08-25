@@ -83,6 +83,14 @@ func getChannels(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "channels": channels})
 	}
 }
+func getChannel(c *gin.Context) {
+	channel, err := GetChannel(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "channel": channel})
+	}
+}
 
 func deleteThread(c *gin.Context) {
 	err := DeleteThread(c)
