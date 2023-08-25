@@ -48,7 +48,7 @@ func GetMovie(c *gin.Context) (Movie, error) {
 }
 func SearchMovie(c *gin.Context) ([]Movie, error) {
 	db := storage.DB()
-	search, valid := c.GetQuery(`search`)
+	search, valid := c.GetQuery(`keyword`)
 	if !valid {
 		return []Movie{}, errors.New("No search query string")
 	}
