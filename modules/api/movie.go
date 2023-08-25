@@ -56,9 +56,14 @@ func SearchMovie(c *gin.Context) ([]Movie, error) {
 	}
 	query := `
 	SELECT 
-		*
+		m.*,
+		c.channel_id
 	FROM 
-		movie
+		movie as m
+	LEFT JOIN
+		channel as c
+	ON
+		m.movie_id = c.movie_id
 	WHERE 
 		original_title REGEXP '` + search + `'
 		or
@@ -77,7 +82,7 @@ func SearchMovie(c *gin.Context) ([]Movie, error) {
 
 	for rows.Next() {
 		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &original_title,
-			&kr_title, &poster_path, &release_date, &overview)
+			&kr_title, &poster_path, &release_date, &overview, &mov.Channel_id)
 		if err != nil {
 			return []Movie{}, err
 		}

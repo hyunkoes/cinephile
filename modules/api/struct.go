@@ -30,6 +30,7 @@ type Channel struct {
 }
 type Movie struct {
 	Movie_id       int       `json:"movieId"`
+	Channel_id     int       `json:"channelId"`
 	Is_adult       bool      `json:"isAdult"`
 	Original_title string    `json:"originalTitle"`
 	Kr_title       string    `json:"krTitle"`
