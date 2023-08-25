@@ -1,8 +1,10 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"cinephile/modules/storage"
 
@@ -67,12 +69,44 @@ func SearchMovie(c *gin.Context) ([]Movie, error) {
 	defer rows.Close()
 	movies := make([]Movie, 0)
 	var mov Movie
+	var original_title sql.NullString
+	var kr_title sql.NullString
+	var poster_path sql.NullString
+	var release_date sql.NullTime
+	var overview sql.NullString
+
 	for rows.Next() {
-		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &mov.Original_title,
-			&mov.Kr_title, &mov.Poster_path, &mov.Release_date, &mov.Overview)
+		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &original_title,
+			&kr_title, &poster_path, &release_date, &overview)
 		if err != nil {
 			return []Movie{}, err
 		}
+		if !original_title.Valid {
+			mov.Original_title = ""
+		} else {
+			mov.Original_title = original_title.String
+		}
+		if !kr_title.Valid {
+			mov.Kr_title = ""
+		} else {
+			mov.Kr_title = kr_title.String
+		}
+		if !poster_path.Valid {
+			mov.Poster_path = ""
+		} else {
+			mov.Poster_path = poster_path.String
+		}
+		if !release_date.Valid {
+			mov.Release_date = time.Time{}
+		} else {
+			mov.Release_date = release_date.Time
+		}
+		if !overview.Valid {
+			mov.Overview = ""
+		} else {
+			mov.Overview = overview.String
+		}
+
 		movies = append(movies, mov)
 	}
 	return movies, nil
