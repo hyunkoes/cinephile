@@ -97,6 +97,7 @@ func RegistMovieApiHandler(api *gin.RouterGroup) {
 	400 -> No more thread
 	*/
 	// api.GET("/movie", getMovie)
+	api.GET("/movies/search", searchMovie)
 }
 
 func RegistChannelApiHandler(api *gin.RouterGroup) {

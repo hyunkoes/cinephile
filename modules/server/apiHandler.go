@@ -50,6 +50,15 @@ func getMovie(c *gin.Context) {
 	}
 }
 
+func searchMovie(c *gin.Context) {
+	movies, err := SearchMovie(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "movies": movies})
+	}
+}
+
 // Movie R
 func getMovies(c *gin.Context) {
 	movie, err := GetMovies(c)
