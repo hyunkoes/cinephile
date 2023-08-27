@@ -48,11 +48,11 @@ func GetMovie(c *gin.Context) (Movie, error) {
 	}
 	return mov, nil
 }
-func SearchMovie(c *gin.Context) ([]Movie, error) {
+func SearchMovie(c *gin.Context) ([]MovieSearch, error) {
 	db := storage.DB()
 	search, valid := c.GetQuery(`keyword`)
 	if !valid {
-		return []Movie{}, errors.New("No search query string")
+		return []MovieSearch{}, errors.New("No search query string")
 	}
 	query := `
 	SELECT 
@@ -72,8 +72,8 @@ func SearchMovie(c *gin.Context) ([]Movie, error) {
 	`
 	rows, _ := db.Query(query)
 	defer rows.Close()
-	movies := make([]Movie, 0)
-	var mov Movie
+	movies := make([]MovieSearch, 0)
+	var mov MovieSearch
 	var original_title sql.NullString
 	var kr_title sql.NullString
 	var poster_path sql.NullString
@@ -84,7 +84,7 @@ func SearchMovie(c *gin.Context) ([]Movie, error) {
 		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &original_title,
 			&kr_title, &poster_path, &release_date, &overview, &mov.Channel_id)
 		if err != nil {
-			return []Movie{}, err
+			return []MovieSearch{}, err
 		}
 		if !original_title.Valid {
 			mov.Original_title = ""

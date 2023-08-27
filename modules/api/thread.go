@@ -93,7 +93,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	var thread Thread_detail
 	var is_recommended sql.NullBool
 	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Channel_id, &thread.Self.Channel.Movie.Original_title,
-		&thread.Self.Channel.Movie.Kr_title, &thread.Self.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent_id, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+		&thread.Self.Channel.Movie.Kr_title, &thread.Self.Channel.Movie.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent_id, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
 	if !is_recommended.Valid {
 		thread.Self.Is_recommended = false
 	} else {
@@ -128,7 +128,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 		t.thread_id = ` + string(parent_id) + `;`
 	if parent_id != -1 {
 		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Channel_id, &thread.Parent.Channel.Movie.Original_title,
-			&thread.Parent.Channel.Movie.Kr_title, &thread.Parent.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent_id, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
+			&thread.Parent.Channel.Movie.Kr_title, &thread.Parent.Channel.Movie.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent_id, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
 		if !is_recommended.Valid {
 			thread.Parent.Is_recommended = false
 		} else {
@@ -141,7 +141,7 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Channel_id, &child_thread.Channel.Movie.Original_title, &child_thread.Channel.Movie.Kr_title, &child_thread.Movie_id,
+		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Channel_id, &child_thread.Channel.Movie.Original_title, &child_thread.Channel.Movie.Kr_title, &child_thread.Channel.Movie.Movie_id,
 			&child_thread.Author.Id, &child_thread.Parent_id, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return Thread_detail{}, err
@@ -206,7 +206,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 	var is_recommended sql.NullBool
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err
 		}
