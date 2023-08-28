@@ -1,12 +1,12 @@
 package api
 
 import (
+	"cinephile/modules/storage"
+	. "cinephile/modules/tmdb"
 	"database/sql"
 	"errors"
 	"fmt"
 	"time"
-
-	"cinephile/modules/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +26,7 @@ func GetMovies(c *gin.Context) ([]Movie, error) {
 		if err != nil {
 			return []Movie{}, err
 		}
+		mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
 		movies = append(movies, mov)
 	}
 	return movies, nil
@@ -45,6 +46,7 @@ func GetMovie(c *gin.Context) (Movie, error) {
 		if err != nil {
 			return Movie{}, err
 		}
+		mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
 	}
 	return mov, nil
 }
@@ -111,7 +113,7 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, error) {
 		} else {
 			mov.Overview = overview.String
 		}
-
+		mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
 		movies = append(movies, mov)
 	}
 	return movies, nil

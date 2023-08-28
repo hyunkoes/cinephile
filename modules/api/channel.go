@@ -4,6 +4,8 @@ import (
 	"cinephile/modules/storage"
 	"errors"
 
+	. "cinephile/modules/tmdb"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,5 +37,6 @@ func GetChannel(c *gin.Context) (Channel, error) {
 	row := db.QueryRow(query)
 	err := row.Scan(&channel.Channel_id, &channel.Movie.Movie_id, &channel.Thread_count, &channel.Subscribe_count, &channel.Like_count, &channel.Movie.Movie_id, &channel.Movie.Is_adult, &channel.Movie.Original_title, &channel.Movie.Kr_title, &channel.Movie.Poster_path, &channel.Movie.Release_date, &channel.Movie.Overview)
 	_ = err
+	channel.Movie.Poster_path = TmdbPosterAPI(channel.Movie.Poster_path)
 	return channel, nil
 }
