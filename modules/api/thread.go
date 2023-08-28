@@ -6,6 +6,7 @@ import (
 
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
+	. "cinephile/modules/tmdb"
 
 	"github.com/gin-gonic/gin"
 )
@@ -95,6 +96,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		} else {
 			thread.Is_recommended = is_recommended.Bool
 		}
+		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
 	last_cursor := Threads[len(Threads)-1].Thread_id
@@ -279,6 +281,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		} else {
 			thread.Is_recommended = is_recommended.Bool
 		}
+		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
 	last_cursor := Threads[len(Threads)-1].Thread_id
