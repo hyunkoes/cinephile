@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
@@ -35,6 +34,72 @@ import (
 //		}
 //		return Threads, nil
 //	}
+func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
+	db := storage.DB()
+	cursor, valid := c.GetQuery("cursor")
+	if cursor == "-1" || !valid {
+		cursor = "2147483647"
+	}
+	parent_id, valid := c.GetQuery("parent_id")
+	var length int
+	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor + ` and parent = ` + parent_id).Scan(&length)
+	if length == 0 {
+		return []Thread{}, errors.New("Nothing to show"), 0
+	}
+	query := `
+	SELECT
+		t.thread_id,
+		t.channel_id,
+		m.original_title,
+		m.kr_title,
+		m.movie_id,
+		m.poster_path,
+		t.email,
+		t.parent,
+		t.content,
+		tr.is_recommended,
+		t.updated_at
+	FROM
+		thread AS t
+	LEFT JOIN
+		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	LEFT JOIN
+		channel AS c ON t.channel_id = c.channel_id
+	LEFT JOIN
+		movie AS m ON c.movie_id = m.movie_id
+	WHERE
+		t.parent = ` + parent_id + `  
+		and 
+		t.thread_id < ` + cursor + `
+	ORDER BY
+		t.thread_id DESC
+	LIMIT 10;
+	`
+	rows, err := db.Query(query)
+
+	if err := ErrChecker.Check(err); err != nil {
+		return []Thread{}, err, 0
+	}
+	defer rows.Close()
+	Threads := make([]Thread, 0)
+	var thread Thread
+	var is_recommended sql.NullBool
+	for rows.Next() {
+		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+		if err := ErrChecker.Check(err); err != nil {
+			return []Thread{}, err, 0
+		}
+		if !is_recommended.Valid {
+			thread.Is_recommended = false
+		} else {
+			thread.Is_recommended = is_recommended.Bool
+		}
+		Threads = append(Threads, thread)
+	}
+	last_cursor := Threads[len(Threads)-1].Thread_id
+	return Threads, nil, last_cursor
+}
 func GetThread(c *gin.Context) (Thread_detail, error) {
 	thread_id, valid := c.GetQuery("thread_id")
 	if !valid {
@@ -157,17 +222,16 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	return thread, nil
 }
 
-func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
+func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	fmt.Println(cursor, valid)
 	if cursor == "-1" || !valid {
 		cursor = "2147483647"
 	}
 	var length int
-	_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
+	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor).Scan(&length)
 	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show")
+		return []Thread{}, errors.New("Nothing to show"), 0
 	}
 	query := `
 	SELECT
@@ -198,7 +262,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 	rows, err := db.Query(query)
 
 	if err := ErrChecker.Check(err); err != nil {
-		return []Thread{}, err
+		return []Thread{}, err, 0
 	}
 	defer rows.Close()
 	Threads := make([]Thread, 0)
@@ -208,7 +272,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
 			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
-			return []Thread{}, err
+			return []Thread{}, err, 0
 		}
 		if !is_recommended.Valid {
 			thread.Is_recommended = false
@@ -217,7 +281,8 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error) {
 		}
 		Threads = append(Threads, thread)
 	}
-	return Threads, nil
+	last_cursor := Threads[len(Threads)-1].Thread_id
+	return Threads, nil, last_cursor
 }
 
 func RegistThread(c *gin.Context) error {

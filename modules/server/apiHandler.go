@@ -8,11 +8,19 @@ import (
 
 // Thread CRUD
 func getThreads(c *gin.Context) {
-	threads, err := GetThreadsWithRecommend(c)
+	_, valid := c.GetQuery(`parent_id`)
+	var threads []Thread
+	var err error
+	var cursor int
+	if !valid {
+		threads, err, cursor = GetThreadsWithRecommend(c)
+	} else {
+		threads, err, cursor = GetChildThreadsWithRecommend(c)
+	}
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "threads": threads})
+		c.JSON(200, gin.H{"error": nil, "threads": threads, "lastCursor": cursor})
 	}
 }
 func getThread(c *gin.Context) {
