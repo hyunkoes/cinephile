@@ -102,10 +102,10 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	last_cursor := Threads[len(Threads)-1].Thread_id
 	return Threads, nil, last_cursor
 }
-func GetThread(c *gin.Context) (Thread_detail, error) {
+func GetThread(c *gin.Context) (Thread, error) {
 	thread_id, valid := c.GetQuery("thread_id")
 	if !valid {
-		return Thread_detail{}, errors.New("Invalid query string")
+		return Thread{}, errors.New("Invalid query string")
 	}
 	db := storage.DB()
 	query := `
@@ -131,96 +131,18 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 	WHERE
 		t.thread_id = ` + thread_id + `;
 	`
-
-	child_query := `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		t.email,
-		t.parent,
-		t.content,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE
-		t.parent = ` + thread_id + `
-	ORDER BY
-		t.thread_id;
-	`
-	var thread Thread_detail
+	var thread Thread
 	var is_recommended sql.NullBool
-	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Channel_id, &thread.Self.Channel.Movie.Original_title,
-		&thread.Self.Channel.Movie.Kr_title, &thread.Self.Channel.Movie.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent_id, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
 	if !is_recommended.Valid {
-		thread.Self.Is_recommended = false
+		thread.Is_recommended = false
 	} else {
-		thread.Self.Is_recommended = is_recommended.Bool
+		thread.Is_recommended = is_recommended.Bool
 	}
-	rows, err := db.Query(child_query)
-	if err := ErrChecker.Check(err); err != nil {
-		return Thread_detail{}, err
+	if err != nil {
+		return Thread{}, err
 	}
-	parent_id := thread.Self.Parent_id
-	parent_query := `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		t.email,
-		t.parent,
-		t.content,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE
-		t.thread_id = ` + string(parent_id) + `;`
-	if parent_id != -1 {
-		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Channel_id, &thread.Parent.Channel.Movie.Original_title,
-			&thread.Parent.Channel.Movie.Kr_title, &thread.Parent.Channel.Movie.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent_id, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
-		if !is_recommended.Valid {
-			thread.Parent.Is_recommended = false
-		} else {
-			thread.Parent.Is_recommended = is_recommended.Bool
-		}
-	}
-
-	var child_thread Thread
-	thread.Child = make([]Thread, 0)
-
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Channel_id, &child_thread.Channel.Movie.Original_title, &child_thread.Channel.Movie.Kr_title, &child_thread.Channel.Movie.Movie_id,
-			&child_thread.Author.Id, &child_thread.Parent_id, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
-		if err := ErrChecker.Check(err); err != nil {
-			return Thread_detail{}, err
-		}
-		if !is_recommended.Valid {
-			child_thread.Is_recommended = false
-		} else {
-			child_thread.Is_recommended = is_recommended.Bool
-		}
-		thread.Child = append(thread.Child, child_thread)
-	}
-
 	return thread, nil
 }
 

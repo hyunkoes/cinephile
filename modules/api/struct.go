@@ -15,12 +15,6 @@ type Thread struct {
 	Author         User      `json:"author"`
 }
 
-type Thread_detail struct {
-	Self   Thread   `json:"self"`
-	Parent Thread   `json:"parent"`
-	Child  []Thread `json:"child"`
-}
-
 type Channel struct {
 	Channel_id      int   `json:"channelId"`
 	Thread_count    int   `json:"threadCount"`
