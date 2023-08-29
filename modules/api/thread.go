@@ -11,30 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//	func GetThreads(c *gin.Context) ([]Thread, error) {
-//		db := storage.DB()
-//		var length int
-//		_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
-//		if length == 0 {
-//			return []Thread{}, errors.New("Nothing to show")
-//		}
-//		rows, err := db.Query(`select * from thread`)
-//		if err := ErrChecker.Check(err); err != nil {
-//			return []Thread{}, err
-//		}
-//		defer rows.Close()
-//		Threads := make([]Thread, 0)
-//		var thread Thread
-//		for rows.Next() {
-//			err = rows.Scan(&thread.Thread_id, &thread.Channel.Id, &thread.Content,
-//				&thread.Author.Id, &thread.Parent, &thread.Created_at, &thread.Updated_at)
-//			if err := ErrChecker.Check(err); err != nil {
-//				return []Thread{}, err
-//			}
-//			Threads = append(Threads, thread)
-//		}
-//		return Threads, nil
-//	}
 func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
@@ -45,7 +21,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var length int
 	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor + ` and parent = ` + parent_id).Scan(&length)
 	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show"), 0
+		return []Thread{}, nil, 0
 	}
 	query := `
 	SELECT
@@ -155,7 +131,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var length int
 	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor).Scan(&length)
 	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show"), 0
+		return []Thread{}, nil, 0
 	}
 	query := `
 	SELECT
