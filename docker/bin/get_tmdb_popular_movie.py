@@ -39,7 +39,7 @@ def genre_define(token):
 def movies_to_sql(movies):
     movies.sort(key=lambda x: x.get('id'))
     movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}","{}","{}");\n'
-    genre_sql = 'INSERT INTO genre_releation VALUES ({}, {});\n'
+    genre_sql = 'INSERT INTO genre_relation VALUES ({}, {});\n'
     channel_sql = 'INSERT INTO channel (movie_id) VALUES ({});\n'
     movie_sql_total = ""
     genre_sql_total = ""
