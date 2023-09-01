@@ -52,7 +52,7 @@ def movies_to_sql(movies):
             genre_sql_total += genre_sql.format(movie['id'],genre)
     return movie_sql_total + genre_sql_total + channel_sql_total
 def genre_to_sql(genres):
-    genre_sql = 'INSERT INTO genre VALUES ({}, {});\n'
+    genre_sql = 'INSERT INTO genre VALUES ({}, "{}");\n'
     genre_sql_total = ""
     for genre in genres :
         genre_sql_total += genre_sql.format(genre['id'],genre['name'])
