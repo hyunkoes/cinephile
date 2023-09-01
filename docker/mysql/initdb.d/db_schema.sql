@@ -29,13 +29,15 @@ create table thread(
     thread_id int auto_increment,
     primary key(thread_id),
     channel_id int,
+    title varchar(100),
     content text,
     foreign key(channel_id) references channel(channel_id),
     email varchar(100),
     parent int default -1,
     foreign key(email) references user(email),
     created_at timestamp not null default current_timestamp,
-    updated_at timestamp not null default current_timestamp on update current_timestamp
+    updated_at timestamp not null default current_timestamp on update current_timestamp,
+    is_exposed bool default false
 );
 create table thread_recommend(
     thread_id int,
@@ -47,9 +49,15 @@ create table thread_recommend(
     updated_at timestamp not null default current_timestamp on update current_timestamp
 );
 create table genre(
+    genre_id int,
+    primary key(genre_id),
+    genre_name varchar(20)
+);
+create table genre_relation(
     movie_id int,
     foreign key(movie_id) references movie(movie_id),
-    genre_id int not null
+    genre_id int,
+    foreign key(genre_id) references genre(genre_id)
 );
 create table user_subscribe(
     email varchar(100),
