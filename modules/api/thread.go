@@ -31,7 +31,9 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		m.kr_title,
 		m.movie_id,
 		m.poster_path,
-		t.email,
+		u.email,
+		u.user_name,
+		u.photo,
 		t.parent,
 		t.content,
 		t.like_count,
@@ -45,6 +47,8 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
+	LEFT JOIN
+		user AS u ON u.email = t.email
 	WHERE
 		t.parent = ` + parent_id + `  
 		and 
@@ -64,7 +68,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var is_recommended sql.NullBool
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -92,7 +96,9 @@ func GetThread(c *gin.Context) (Thread, error) {
 		m.original_title,
 		m.kr_title,
 		m.movie_id,
-		t.email,
+		u.email,
+		u.user_name,
+		u.photo,
 		t.parent,
 		t.content,
 		t.like_count,
@@ -106,13 +112,15 @@ func GetThread(c *gin.Context) (Thread, error) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
+	LEFT JOIN
+		user AS u ON u.email = t.email
 	WHERE
 		t.thread_id = ` + thread_id + `;
 	`
 	var thread Thread
 	var is_recommended sql.NullBool
 	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 	if !is_recommended.Valid {
 		thread.Is_recommended = false
 	} else {
@@ -137,34 +145,39 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		return []Thread{}, nil, 0
 	}
 	query = `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		m.poster_path,
-		t.email,
-		t.parent,
-		t.content,
-		t.like_count,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE 
-		t.is_exposed = true
-		and
-		t.thread_id < ` + cursor + `
-	ORDER BY
-		t.thread_id DESC
-	LIMIT 10;
+SELECT
+	t.thread_id,
+	t.channel_id,
+	m.original_title,
+	m.kr_title,
+	m.movie_id,
+	m.poster_path,
+	u.email,
+	u.user_name,
+	u.photo,
+	t.parent,
+	t.content,
+	t.like_count,
+	tr.is_recommended,
+	t.created_at,
+	t.updated_at
+FROM
+	thread AS t
+LEFT JOIN
+	thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+LEFT JOIN
+	channel AS c ON t.channel_id = c.channel_id
+LEFT JOIN
+	movie AS m ON c.movie_id = m.movie_id
+LEFT JOIN
+	user AS u ON u.email = t.email
+WHERE 
+	t.is_exposed = true
+	and
+	t.thread_id < ` + cursor + `
+ORDER BY
+	t.thread_id DESC
+LIMIT 10;
 	`
 	rows, err := db.Query(query)
 
@@ -177,7 +190,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var is_recommended sql.NullBool
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
