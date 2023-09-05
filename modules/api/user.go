@@ -11,7 +11,7 @@ func RegistUserForTest(c *gin.Context) error {
 	var form struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
-		Name     string `json:"name`
+		Name     string `json:"name"`
 	}
 	err := c.ShouldBind(&form)
 	if err != nil {
