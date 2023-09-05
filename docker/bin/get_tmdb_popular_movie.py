@@ -68,8 +68,7 @@ def run_script():
             break
         movies = movies+next_movies
         time.sleep(1)
-    sql = movies_to_sql(movies) + genre_to_sql(genre_define(token))
-    print(genre_define(token))
+    sql = genre_to_sql(genre_define(token)) + movies_to_sql(movies) 
     with open('../mysql/initdb.d/popular_movie.sql','w+') as f:
         f.write(sql)
     
