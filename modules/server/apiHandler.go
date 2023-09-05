@@ -59,11 +59,11 @@ func getMovie(c *gin.Context) {
 }
 
 func searchMovie(c *gin.Context) {
-	movies, err := SearchMovie(c)
+	movies, cursor, err := SearchMovie(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "movies": movies})
+		c.JSON(200, gin.H{"error": nil, "movies": movies, "lastCursor": cursor})
 	}
 }
 
