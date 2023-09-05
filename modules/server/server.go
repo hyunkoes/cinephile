@@ -76,6 +76,7 @@ func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
+	api.POST("/test/user", registUser)
 	// api.GET("/user", getUser)
 	/*  Reply			200 -> threads
 	400 -> No more thread
