@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os"
 
 	. "cinephile/modules/storage"
 
@@ -12,6 +13,7 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
+	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {
 		panic(fmt.Errorf("mysql is off status"))
 	}
