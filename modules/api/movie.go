@@ -102,9 +102,9 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, int, error) {
 	LEFT JOIN
 		genre g ON gr.genre_id = g.genre_id
 	WHERE 
-		original_title REGEXP '` + search + `'
+		(original_title REGEXP '` + search + `'
 		or
-		kr_title REGEXP '` + search + `'
+		kr_title REGEXP '` + search + `')
 		and m.movie_id > ` + cursor + `
 	GROUP BY
 		m.movie_id, m.original_title, m.kr_title, c.channel_id
