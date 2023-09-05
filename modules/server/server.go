@@ -101,6 +101,8 @@ func RegistMovieApiHandler(api *gin.RouterGroup) {
 	*/
 	// api.GET("/movie", getMovie)
 	api.GET("/movies/search", searchMovie)
+
+	api.GET("/movies/hot", getHotMovies)
 }
 
 func RegistChannelApiHandler(api *gin.RouterGroup) {

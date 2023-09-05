@@ -117,3 +117,12 @@ func registUser(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
+
+func getHotMovies(c *gin.Context) {
+	movies, err := GetHotMovies(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "movies": movies})
+	}
+}
