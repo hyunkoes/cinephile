@@ -35,6 +35,7 @@ create table thread(
     email varchar(100),
     parent int default -1,
     foreign key(email) references user(email),
+    like_count int default 0,
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null default current_timestamp on update current_timestamp,
     is_exposed bool default false
