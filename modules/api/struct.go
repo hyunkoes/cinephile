@@ -10,6 +10,7 @@ type Thread struct {
 	Content        string    `json:"content"`
 	Created_at     time.Time `json:"createdAt"`
 	Updated_at     time.Time `json:"updatedAt"`
+	Like           int       `json:"like"`
 	Is_recommended bool      `json:"isLiked"`
 	Channel        Channel   `json:"channel"`
 	Author         User      `json:"author"`
@@ -30,6 +31,11 @@ type Movie struct {
 	Poster_path    string    `json:"posterPath"`
 	Release_date   time.Time `json:"releaseDate"`
 	Overview       string    `json:"overview"`
+	Genres         []Genre   `json:"genres"`
+}
+type Genre struct {
+	Genre_id   int    `json:"genreId"`
+	Genre_name string `json:"genreNmae"`
 }
 type MovieSearch struct {
 	Movie_id       int       `json:"movieId"`
@@ -40,6 +46,7 @@ type MovieSearch struct {
 	Poster_path    string    `json:"posterPath"`
 	Release_date   time.Time `json:"releaseDate"`
 	Overview       string    `json:"overview"`
+	Genres         []Genre   `json:"genres"`
 }
 type Character struct {
 	Name               string  `json:"name"`

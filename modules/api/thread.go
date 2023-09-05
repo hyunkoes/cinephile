@@ -34,6 +34,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		t.email,
 		t.parent,
 		t.content,
+		t.like_count,
 		tr.is_recommended,
 		t.updated_at
 	FROM
@@ -63,7 +64,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var is_recommended sql.NullBool
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -94,6 +95,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 		t.email,
 		t.parent,
 		t.content,
+		t.like_count,
 		tr.is_recommended,
 		t.updated_at
 	FROM
@@ -110,7 +112,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 	var thread Thread
 	var is_recommended sql.NullBool
 	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 	if !is_recommended.Valid {
 		thread.Is_recommended = false
 	} else {
@@ -125,15 +127,16 @@ func GetThread(c *gin.Context) (Thread, error) {
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	if cursor == "-1" || !valid {
+	if !valid {
 		cursor = "2147483647"
 	}
 	var length int
-	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor).Scan(&length)
+	query := `select count(*) from thread where thread_id < ` + cursor
+	_ = db.QueryRow(query).Scan(&length)
 	if length == 0 {
 		return []Thread{}, nil, 0
 	}
-	query := `
+	query = `
 	SELECT
 		t.thread_id,
 		t.channel_id,
@@ -144,6 +147,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		t.email,
 		t.parent,
 		t.content,
+		t.like_count,
 		tr.is_recommended,
 		t.updated_at
 	FROM
@@ -154,7 +158,10 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
-	WHERE t.thread_id < ` + cursor + `
+	WHERE 
+		t.is_exposed = true
+		and
+		t.thread_id < ` + cursor + `
 	ORDER BY
 		t.thread_id DESC
 	LIMIT 10;
@@ -170,7 +177,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var is_recommended sql.NullBool
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -182,7 +189,10 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
-	last_cursor := Threads[len(Threads)-1].Thread_id
+	last_cursor := 0
+	if len(Threads) > 0 {
+		last_cursor = Threads[len(Threads)-1].Thread_id
+	}
 	return Threads, nil, last_cursor
 }
 
@@ -220,6 +230,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 	if err == sql.ErrNoRows {
 		// No row -> is_recommended : true
 		_, err = db.Exec(`Insert into thread_recommend (thread_id, email, is_recommended) values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
+
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
