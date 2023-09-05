@@ -197,7 +197,7 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 }
 
 func RegistThread(c *gin.Context) error {
-	var reqBody Thread
+	var reqBody ThreadRegistForm
 	user := c.GetHeader("user")
 	err := c.ShouldBind(&reqBody)
 
@@ -208,11 +208,14 @@ func RegistThread(c *gin.Context) error {
 		reqBody.Parent_id = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel.Channel_id, reqBody.Content, user, reqBody.Parent_id)
+	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel_id, reqBody.Content, user, reqBody.Parent_id)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-
+	_, err = db.Exec(`Update channel set thread_count = thread_count + 1 where channel_id = ?`, reqBody.Channel_id)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -234,6 +237,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
+		_, err = db.Exec(`Update thread set like_count = like_count + 1 where thread_id = ? `, reqBody.Thread_id)
 		// row 추가
 		return nil
 	}
@@ -243,6 +247,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
+		_, err = db.Exec(`Update thread set like_count = like_count - 1 where thread_id = ? `, reqBody.Thread_id)
 		return nil
 	}
 	// Not is_recommneded -> is_recommend : true
@@ -250,6 +255,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
+	_, err = db.Exec(`Update thread set like_count = like_count + 1 where thread_id = ? `, reqBody.Thread_id)
 	return nil
 }
 

@@ -15,7 +15,11 @@ type Thread struct {
 	Channel        Channel   `json:"channel"`
 	Author         User      `json:"author"`
 }
-
+type ThreadRegistForm struct {
+	Channel_id int    `json:"channelId"`
+	Content    string `json:"content"`
+	Parent_id  int    `json:"parentId"`
+}
 type Channel struct {
 	Channel_id      int   `json:"channelId"`
 	Thread_count    int   `json:"threadCount"`
