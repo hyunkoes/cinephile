@@ -19,6 +19,7 @@ type ThreadRegistForm struct {
 	Channel_id int    `json:"channelId"`
 	Content    string `json:"content"`
 	Parent_id  int    `json:"parentId"`
+	Is_exposed bool   `json:"isExposed"`
 }
 type Channel struct {
 	Channel_id      int   `json:"channelId"`
