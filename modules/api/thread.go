@@ -221,7 +221,7 @@ func RegistThread(c *gin.Context) error {
 		reqBody.Parent_id = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent,is_exposed) values(?,?,?,?,?)`, reqBody.Channel_id, reqBody.Content, user, reqBody.Parent_id, reqBody.Is_exposed)
+	_, err = db.Exec(`Insert into thread (channel_id,title,content,email,parent,is_exposed) values(?,?,?,?,?,?)`, reqBody.Channel_id, reqBody.Title, reqBody.Content, user, reqBody.Parent_id, reqBody.Is_exposed)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
