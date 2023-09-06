@@ -203,7 +203,7 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, int, error) {
 	GROUP BY
 		m.movie_id, m.original_title, m.kr_title, c.channel_id
 	LIMIT
-		8
+		17
 		;
 	`
 	rows, _ := db.Query(query)
@@ -217,9 +217,10 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, int, error) {
 	var poster_path sql.NullString
 	var release_date sql.NullTime
 	var overview sql.NullString
-	var lastCursor int
+	var lastCursor int = -1
 	var genres_ids string
 	var genres_names string
+
 	for rows.Next() {
 		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &original_title,
 			&kr_title, &poster_path, &release_date, &overview, &mov.Channel_id, &genres_ids, &genres_names)
@@ -261,8 +262,13 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, int, error) {
 		}
 		mov.Genres = genres
 		mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
-		lastCursor = mov.Movie_id
 		movies = append(movies, mov)
 	}
+
+	if len(movies) > 16 {
+		movies = movies[:len(movies)-1]
+		lastCursor = movies[len(movies)-1].Movie_id
+	}
+
 	return movies, lastCursor, nil
 }

@@ -19,9 +19,14 @@ func getThreads(c *gin.Context) {
 	}
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil, "threads": threads, "lastCursor": cursor})
+		return
 	}
+	if cursor > 0 {
+		c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": cursor})
+		return
+	}
+	c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": nil})
+
 }
 func getThread(c *gin.Context) {
 	thread, err := GetThread(c)
@@ -62,9 +67,14 @@ func searchMovie(c *gin.Context) {
 	movies, cursor, err := SearchMovie(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil, "movies": movies, "lastCursor": cursor})
+		return
 	}
+	if cursor > 0 {
+		c.JSON(200, gin.H{"error": nil, "movies": movies, "count": len(movies), "lastCursor": cursor})
+		return
+	}
+	c.JSON(200, gin.H{"error": nil, "movies": movies, "count": len(movies), "lastCursor": nil})
+
 }
 
 // Movie R

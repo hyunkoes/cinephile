@@ -177,7 +177,7 @@ WHERE
 	t.thread_id < ` + cursor + `
 ORDER BY
 	t.thread_id DESC
-LIMIT 10;
+LIMIT 11;
 	`
 	rows, err := db.Query(query)
 
@@ -202,8 +202,9 @@ LIMIT 10;
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
-	last_cursor := 0
-	if len(Threads) > 0 {
+	last_cursor := -1
+	if len(Threads) > 10 {
+		Threads = Threads[:len(Threads)-1]
 		last_cursor = Threads[len(Threads)-1].Thread_id
 	}
 	return Threads, nil, last_cursor
