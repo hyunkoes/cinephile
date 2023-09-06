@@ -41,7 +41,7 @@ type Movie struct {
 }
 type Genre struct {
 	Genre_id   int    `json:"genreId"`
-	Genre_name string `json:"genreNmae"`
+	Genre_name string `json:"genreName"`
 }
 type MovieSearch struct {
 	Movie_id       int       `json:"movieId"`
