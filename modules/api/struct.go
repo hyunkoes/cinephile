@@ -7,6 +7,7 @@ import (
 type Thread struct {
 	Thread_id      int       `json:"threadId"`
 	Parent_id      int       `json:"parentId,default=-1"`
+	Title          string    `json:"title"`
 	Content        string    `json:"content"`
 	Created_at     time.Time `json:"createdAt"`
 	Updated_at     time.Time `json:"updatedAt"`

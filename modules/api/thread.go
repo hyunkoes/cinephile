@@ -35,6 +35,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		u.user_name,
 		u.photo,
 		t.parent,
+		t.title,
 		t.content,
 		t.like_count,
 		tr.is_recommended,
@@ -66,9 +67,10 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	Threads := make([]Thread, 0)
 	var thread Thread
 	var is_recommended sql.NullBool
+	var title sql.NullString
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -76,6 +78,11 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 			thread.Is_recommended = false
 		} else {
 			thread.Is_recommended = is_recommended.Bool
+		}
+		if !title.Valid {
+			thread.Title = ""
+		} else {
+			thread.Title = title.String
 		}
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
@@ -101,6 +108,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 		u.user_name,
 		u.photo,
 		t.parent,
+		t.title,
 		t.content,
 		t.like_count,
 		tr.is_recommended,
@@ -121,12 +129,18 @@ func GetThread(c *gin.Context) (Thread, error) {
 	`
 	var thread Thread
 	var is_recommended sql.NullBool
+	var title sql.NullString
 	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 	if !is_recommended.Valid {
 		thread.Is_recommended = false
 	} else {
 		thread.Is_recommended = is_recommended.Bool
+	}
+	if !title.Valid {
+		thread.Title = ""
+	} else {
+		thread.Title = title.String
 	}
 	if err != nil {
 		return Thread{}, err
@@ -159,6 +173,7 @@ SELECT
 	u.user_name,
 	u.photo,
 	t.parent,
+	t.title,
 	t.content,
 	t.like_count,
 	tr.is_recommended,
@@ -191,9 +206,10 @@ LIMIT 11;
 	Threads := make([]Thread, 0)
 	var thread Thread
 	var is_recommended sql.NullBool
+	var title sql.NullString
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -201,6 +217,11 @@ LIMIT 11;
 			thread.Is_recommended = false
 		} else {
 			thread.Is_recommended = is_recommended.Bool
+		}
+		if !title.Valid {
+			thread.Title = ""
+		} else {
+			thread.Title = title.String
 		}
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
