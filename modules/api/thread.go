@@ -96,6 +96,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 		m.original_title,
 		m.kr_title,
 		m.movie_id,
+		m.poster_path,
 		u.email,
 		u.user_name,
 		u.photo,
@@ -103,6 +104,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 		t.content,
 		t.like_count,
 		tr.is_recommended,
+		t.created_at,
 		t.updated_at
 	FROM
 		thread AS t
@@ -120,7 +122,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 	var thread Thread
 	var is_recommended sql.NullBool
 	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 	if !is_recommended.Valid {
 		thread.Is_recommended = false
 	} else {
@@ -129,6 +131,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 	if err != nil {
 		return Thread{}, err
 	}
+	thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 	return thread, nil
 }
 
