@@ -39,6 +39,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		t.content,
 		t.like_count,
 		tr.is_recommended,
+		T.created_at,
 		t.updated_at
 	FROM
 		thread AS t
@@ -70,7 +71,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var title sql.NullString
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
