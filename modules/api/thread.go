@@ -101,6 +101,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 	SELECT
 		t.thread_id,
 		t.channel_id,
+		c.thread_count,
 		m.original_title,
 		m.kr_title,
 		m.movie_id,
@@ -131,7 +132,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 	var thread Thread
 	var is_recommended sql.NullBool
 	var title sql.NullString
-	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
+	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Thread_count, &thread.Channel.Movie.Original_title,
 		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 	if !is_recommended.Valid {
 		thread.Is_recommended = false
