@@ -6,7 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Thread CRUD
+// @Summary Get thread list
+// @Description Get thread list with two parameter. Cursor is pagination id. Type is sorting filter.
+// @Accept json
+// @Produce json
+// @Success 200 {array} Thread
+//
+//	@Param        cursor    query     string  false  "Pagination id"  Format(number)
+//	@Param        type    query     string  false  "Sorting filter" Format(new || hot)
+//
+// @Router /list/threads [get]
 func getThreads(c *gin.Context) {
 	_, valid := c.GetQuery(`parent_id`)
 	var threads []Thread
@@ -28,6 +37,14 @@ func getThreads(c *gin.Context) {
 	c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": nil})
 
 }
+
+// @Summary Get single thread info
+// @Description Get thread with thread_id.
+// @Accept json
+// @Produce json
+// @Success 200 {object} Thread
+// @Param        thread_id    query     string  true  "Thread id"  Format(number)
+// @Router /threads [get]
 func getThread(c *gin.Context) {
 	thread, err := GetThread(c)
 	if err != nil {
@@ -36,6 +53,17 @@ func getThread(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "thread": thread})
 	}
 }
+
+// @Summary Regist thread
+// @Description Regist thread.
+// @Description If re-thread, should contain parentId ( Parent thread id ).
+// @Description Required access token.
+// @Accept json
+// @Produce json
+// @Success 200 {string} error
+// @Param thread body ThreadRegistForm true "Thread data"
+// @Param user header string true "User token" default(chs)
+// @Router /threads [post]
 func registThread(c *gin.Context) {
 	err := RegistThread(c)
 	if err != nil {
@@ -44,6 +72,15 @@ func registThread(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil})
 	}
 }
+
+// @Summary Change like-state of thread
+// @Description First like -> create history
+// @Description If you cancel like-state, change row state ( Soft delete )
+// @Accept json
+// @Produce json
+// @Success 200 {string} error
+// @Param thread body RecommendForm true "Recommend data"
+// @Router /threads/like [post]
 func changeRecommendThread(c *gin.Context) {
 	err := ChangeRecommendThread(c)
 	if err != nil {
@@ -53,7 +90,12 @@ func changeRecommendThread(c *gin.Context) {
 	}
 }
 
-// Movie R
+// @Summary Get single movie info
+// @Accept json
+// @Produce json
+// @Success 200 {object} Movie
+// @Param movie_id query string true "Movie id"
+// @Router /movies [get]
 func getMovie(c *gin.Context) {
 	movie, err := GetMovie(c)
 	if err != nil {
@@ -63,6 +105,12 @@ func getMovie(c *gin.Context) {
 	}
 }
 
+// @Summary Search movie by title ( regexp )
+// @Accept json
+// @Produce json
+// @Success 200 {array} MovieSearch
+// @Param keyword query string true "Title keyword"
+// @Router /movies/search [get]
 func searchMovie(c *gin.Context) {
 	movies, cursor, err := SearchMovie(c)
 	if err != nil {
@@ -77,7 +125,7 @@ func searchMovie(c *gin.Context) {
 
 }
 
-// Movie R
+// test API
 func getMovies(c *gin.Context) {
 	movie, err := GetMovies(c)
 	if err != nil {
@@ -87,12 +135,15 @@ func getMovies(c *gin.Context) {
 	}
 }
 
-/*
-	 Channel list
-		@ type = new / hot
-			@ new is ordering latest thread
-			@ hot is ordering hotest thread
-*/
+// @Summary Get channel list
+// @Accept json
+// @Produce json
+// @Success 200 {array} Channel
+//
+//	@Param        cursor    query     string  false  "Pagination id"  Format(number)
+//	@Param        type    query     string  false  "Sorting filter" Format(new || hot)
+//
+// @Router /list/channel [get]
 func getChannels(c *gin.Context) {
 	channels, err := GetChannels(c)
 	if err != nil {
@@ -101,6 +152,14 @@ func getChannels(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "channels": channels})
 	}
 }
+
+// @Summary Get single channel info
+// @Description Get thread with channel_id
+// @Accept json
+// @Produce json
+// @Success 200 {object} Channel
+// @Param        channel_id    query     string  true  "Channel id"  Format(number)
+// @Router /channel [get]
 func getChannel(c *gin.Context) {
 	channel, err := GetChannel(c)
 	if err != nil {
@@ -110,6 +169,13 @@ func getChannel(c *gin.Context) {
 	}
 }
 
+// @Summary Delete thread
+// @Description Required authentication of thread.
+// @Accept json
+// @Produce json
+// @Success 200 {object} Thread
+// @Param        thread_id    query     string  true  "Thread id"  Format(number)
+// @Router /threads [delete]
 func deleteThread(c *gin.Context) {
 	err := DeleteThread(c)
 	if err != nil {
@@ -128,6 +194,12 @@ func registUser(c *gin.Context) {
 	}
 }
 
+// @Summary Get Hot 8 movies
+// @Description
+// @Accept json
+// @Produce json
+// @Success 200 {object} Movie
+// @Router /movies/hot [get]
 func getHotMovies(c *gin.Context) {
 	movies, err := GetHotMovies(c)
 	if err != nil {
