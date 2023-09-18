@@ -221,8 +221,8 @@ func oAuthLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "localhost", false, true)
-		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "localhost", false, true)
+		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		c.Redirect(http.StatusFound, "/")
 	}
 }
