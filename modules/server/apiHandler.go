@@ -223,6 +223,6 @@ func oAuthLogin(c *gin.Context) {
 	} else {
 		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
 		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
-		c.Redirect(http.StatusFound, "/")
+		c.Redirect(http.StatusFound, "https://cinephile-iqt8veq1e-jeonbyeongmin.vercel.app/home?sort=hot")
 	}
 }
