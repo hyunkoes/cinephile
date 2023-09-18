@@ -230,14 +230,14 @@ func oAuthLogin(c *gin.Context) {
 			Value:    tokens.AccessToken,
 			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
+			SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
 		}
 		rTcookie := &http.Cookie{
 			Name:     "refreshToken",
 			Value:    tokens.RefreshToken,
 			Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
 			HttpOnly: true,
-			SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
+			SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
 		}
 
 		// 쿠키 설정
