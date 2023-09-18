@@ -3,7 +3,9 @@ package server
 import (
 	. "cinephile/modules/api"
 	"fmt"
+	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -223,19 +225,37 @@ func oAuthLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
-		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
+		aTcookie := &http.Cookie{
+			Name:     "accessToken",
+			Value:    tokens.AccessToken,
+			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
+		}
+		rTcookie := &http.Cookie{
+			Name:     "refreshToken",
+			Value:    tokens.RefreshToken,
+			Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
+		}
+
+		// 쿠키 설정
+		http.SetCookie(c.Writer, aTcookie)
+		http.SetCookie(c.Writer, rTcookie)
+		// c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		// c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		home := c.Request.Referer()
 		parsedURL, err := url.Parse(home)
 		if err != nil {
 			c.String(500, "URL 파싱에 실패했습니다.")
 			return
 		}
-		at, err := c.Cookie(`accessToken`)
-		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
-		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
+		// at, err := c.Cookie(`accessToken`)
+		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
+		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		// c.Redirect(http.StatusFound, rootURI)
-		c.JSON(200, gin.H{"cookie": at, "url": rootURI})
+		c.Redirect(http.StatusFound, rootURI)
+		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
 }
