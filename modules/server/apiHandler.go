@@ -232,6 +232,8 @@ func oAuthLogin(c *gin.Context) {
 			c.String(500, "URL 파싱에 실패했습니다.")
 			return
 		}
+		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
+		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
 		c.Redirect(http.StatusFound, rootURI)
 	}
