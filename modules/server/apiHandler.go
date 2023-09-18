@@ -37,6 +37,7 @@ func getThreads(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": cursor})
 		return
 	}
+	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "", false, true)
 	c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": nil})
 
 }
@@ -226,19 +227,12 @@ func oAuthLogin(c *gin.Context) {
 		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
 		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		home := c.Request.Referer()
-		// Referer 값을 파싱하여 URL 객체로 변환합니다.
 		parsedURL, err := url.Parse(home)
 		if err != nil {
 			c.String(500, "URL 파싱에 실패했습니다.")
 			return
 		}
-
-		// 루트 URI를 추출합니다.
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		fmt.Println(home)
-		fmt.Println(parsedURL)
-		fmt.Println(rootURI)
-		c.String(200, "루트 URI: %s", rootURI)
 		c.Redirect(http.StatusFound, rootURI)
 	}
 }
