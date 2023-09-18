@@ -24,6 +24,7 @@ func getThreads(c *gin.Context) {
 	var threads []Thread
 	var err error
 	var cursor int
+	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "localhost", false, true)
 	if !valid {
 		threads, err, cursor = GetThreadsWithRecommend(c)
 	} else {
@@ -37,7 +38,6 @@ func getThreads(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": cursor})
 		return
 	}
-	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "", false, true)
 	c.JSON(200, gin.H{"error": nil, "threads": threads, "count": len(threads), "lastCursor": nil})
 
 }
