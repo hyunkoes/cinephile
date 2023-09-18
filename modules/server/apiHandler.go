@@ -3,7 +3,6 @@ package server
 import (
 	. "cinephile/modules/api"
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
@@ -232,9 +231,11 @@ func oAuthLogin(c *gin.Context) {
 			c.String(500, "URL 파싱에 실패했습니다.")
 			return
 		}
+		at, err := c.Cookie(`accessToken`)
 		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
 		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		c.Redirect(http.StatusFound, rootURI)
+		// c.Redirect(http.StatusFound, rootURI)
+		c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
 }
