@@ -70,7 +70,6 @@ func OAuthLogin(c *gin.Context) (Token, error) {
 		return Token{}, errors.New("No auth code")
 	}
 
-	fmt.Println(code)
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("client_id", KakaoOAuthConf.ClientID)
