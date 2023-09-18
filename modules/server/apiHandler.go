@@ -208,3 +208,18 @@ func getHotMovies(c *gin.Context) {
 		c.JSON(200, gin.H{"error": nil, "movies": movies})
 	}
 }
+
+// @Summary OAuth Login
+// @Description Kakao, Google oauth login
+// @Accept json
+// @Produce json
+// @Success 200 {object} Token
+// @Router /oauth/callback [get]
+func oAuthLogin(c *gin.Context) {
+	tokens, err := OAuthLogin(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "accessToken": tokens.AccessToken, "refreshToken": tokens.RefreshToken, "expires_in": tokens.Expire, "refresh_expires_in": tokens.RefreshExpire})
+	}
+}

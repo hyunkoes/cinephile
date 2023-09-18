@@ -33,6 +33,7 @@ func RegistApiHandler(api *gin.RouterGroup) {
 	RegistChannelApiHandler(api)
 	RegistMovieApiHandler(api)
 	RegistUserApiHandler(api)
+	RegistAccountApiHandler(api)
 	RegistThreadApiHandler(api)
 	RegistSwaggerApiHandler(api)
 }
@@ -83,6 +84,8 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	400 -> No more thread
 	*/
 	// api.POST("/auth", autheticate)
+
+	api.GET("/oauth/callback", oAuthLogin)
 
 }
 func RegistUserApiHandler(api *gin.RouterGroup) {
