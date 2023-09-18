@@ -2,6 +2,7 @@ package server
 
 import (
 	. "cinephile/modules/api"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -220,6 +221,8 @@ func oAuthLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		c.JSON(200, gin.H{"error": nil, "accessToken": tokens.AccessToken, "refreshToken": tokens.RefreshToken, "expires_in": tokens.Expire, "refresh_expires_in": tokens.RefreshExpire})
+		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "localhost", false, true)
+		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "localhost", false, true)
+		c.Redirect(http.StatusFound, "/")
 	}
 }
