@@ -69,3 +69,10 @@ type RecommendForm struct {
 	Thread_id int    `json:"threadId"`
 	Email     string `json:"email"`
 }
+type Token struct {
+	AccessToken   string `json:"access_token"`
+	RefreshToken  string `json:"refresh_token"`
+	Expire        int    `json:"expires_in"`
+	RefreshExpire int    `json:"refresh_expires_in"`
+	Type          string `json:"token_type"`
+}
