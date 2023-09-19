@@ -247,6 +247,7 @@ func oAuthLogin(c *gin.Context) {
 			Path:     rootURI,
 			Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
 			HttpOnly: true,
+			Secure:   false,
 			SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
 		}
 
@@ -257,8 +258,8 @@ func oAuthLogin(c *gin.Context) {
 		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
 		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 
-		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
-		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
+		// c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		// c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 
 		fmt.Println(c.Cookie(`accessToken`))
 		c.Redirect(http.StatusFound, rootURI)
