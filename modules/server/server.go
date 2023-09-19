@@ -21,7 +21,11 @@ func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
 	docs.SwaggerInfo.BasePath = "/api"
 	api := r.Group("/api")
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"localhost", "43.201.9.55"},
+		AllowAllOrigins:  true,
+		AllowCredentials: true,
+	}))
 
 	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {
