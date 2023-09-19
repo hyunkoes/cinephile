@@ -22,8 +22,8 @@ func Serve(mode int) { // local : 4000 호스팅 시작
 	docs.SwaggerInfo.BasePath = "/api"
 	api := r.Group("/api")
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"localhost", "43.201.9.55"},
-		AllowAllOrigins:  true,
+		AllowOrigins: []string{"localhost", "ec2-43-201-9-55.ap-northeast-2.compute.amazonaws.com"},
+		// AllowAllOrigins:  true,
 		AllowCredentials: true,
 	}))
 
