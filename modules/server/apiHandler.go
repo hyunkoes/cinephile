@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -232,23 +231,24 @@ func oAuthLogin(c *gin.Context) {
 		}
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
 		aTcookie := &http.Cookie{
-			Name:     "accessToken",
-			Value:    tokens.AccessToken,
-			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
-			HttpOnly: true,
-			Secure:   false, // HTTPS에서만 쿠키 전송
-			Domain:   "",    // 외부 도메인 설정
-			SameSite: http.SameSiteNoneMode,
+			Name:  "accessToken",
+			Value: tokens.AccessToken,
+			Path:  "/",
+			// Expires:  time.Now().Add(time.Duration(tokens.Expire)),
+			// HttpOnly: true,
+			// Secure:   false, // HTTPS에서만 쿠키 전송
+			// Domain:   "",    // 외부 도메인 설정
+			// SameSite: http.SameSiteNoneMode,
 			// SameSite: http.SameSiteLaxMode, // SameSite 설정 (Strict 모드)
 		}
 		rTcookie := &http.Cookie{
-			Name:     "refreshToken",
-			Value:    tokens.RefreshToken,
-			Path:     "/",
-			Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
-			HttpOnly: true,
-			Secure:   false,   // HTTPS에서만 쿠키 전송
-			Domain:   rootURI, // 외부 도메인 설정
+			Name:  "refreshToken",
+			Value: tokens.RefreshToken,
+			Path:  "/",
+			// Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
+			// HttpOnly: true,
+			// Secure:   false,   // HTTPS에서만 쿠키 전송
+			// Domain:   rootURI, // 외부 도메인 설정
 			// SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
 		}
 
@@ -263,7 +263,8 @@ func oAuthLogin(c *gin.Context) {
 		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
 		c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		c.Request.Header.Set(`Host`, rootURI)
-		fmt.Println(c.Request.Header.Get(`Host`))
+		fmt.Println("RootURI : ", rootURI)
+		fmt.Println("호스트 : ", c.Request.Header.Get(`Host`))
 		c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
