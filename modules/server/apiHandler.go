@@ -232,13 +232,16 @@ func oAuthLogin(c *gin.Context) {
 			return
 		}
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		// aTcookie := &http.Cookie{
-		// 	Name:     "accessToken",
-		// 	Value:    tokens.AccessToken,
-		// 	Expires:  time.Now().Add(time.Duration(tokens.Expire)),
-		// 	HttpOnly: true,
-		// 	SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
-		// }
+		aTcookie := &http.Cookie{
+			Name:     "accessToken",
+			Value:    tokens.AccessToken,
+			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
+			HttpOnly: true,
+			SameSite: http.SameSiteNoneMode, // SameSite 설정 (외부 도메인으로 전송)
+			Secure:   true,                  // HTTPS에서만 쿠키 전송
+			Domain:   ".localhost",          // 외부 도메인 설정
+			// 	SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
+		}
 		rTcookie := &http.Cookie{
 			Name:     "refreshToken",
 			Value:    tokens.RefreshToken,
@@ -249,7 +252,7 @@ func oAuthLogin(c *gin.Context) {
 		}
 
 		// 쿠키 설정
-		// http.SetCookie(c.Writer, aTcookie)
+		http.SetCookie(c.Writer, aTcookie)
 		http.SetCookie(c.Writer, rTcookie)
 		// at, err := c.Cookie(`accessToken`)
 		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
