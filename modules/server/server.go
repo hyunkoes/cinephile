@@ -9,6 +9,7 @@ import (
 
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"github.com/gin-contrib/cors"
 	swaggerFiles "github.com/swaggo/files"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,8 @@ func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
 	docs.SwaggerInfo.BasePath = "/api"
 	api := r.Group("/api")
+	r.Use(cors.Default())
+
 	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {
 		panic(fmt.Errorf("mysql is off status"))
