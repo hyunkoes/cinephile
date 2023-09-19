@@ -257,8 +257,8 @@ func oAuthLogin(c *gin.Context) {
 		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
 		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 
-		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "kauth.kakao.com", false, true)
-		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "kauth.kakao.com", false, true)
+		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "localhost", false, true)
+		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "localhost", false, true)
 		c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
