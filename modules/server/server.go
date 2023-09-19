@@ -19,13 +19,12 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
-	docs.SwaggerInfo.BasePath = "/api"
-	api := r.Group("/api")
 	r.Use(cors.New(cors.Config{
-		// AllowOrigins: []string{"http://localhost", "http://ec2-43-201-9-55.ap-northeast-2.compute.amazonaws.com"},
 		AllowAllOrigins:  true,
 		AllowCredentials: true,
 	}))
+	docs.SwaggerInfo.BasePath = "/api"
+	api := r.Group("/api")
 
 	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {

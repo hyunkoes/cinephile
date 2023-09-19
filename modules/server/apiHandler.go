@@ -25,7 +25,6 @@ func getThreads(c *gin.Context) {
 	var threads []Thread
 	var err error
 	var cursor int
-	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "", false, true)
 	if !valid {
 		threads, err, cursor = GetThreadsWithRecommend(c)
 	} else {
@@ -239,6 +238,7 @@ func oAuthLogin(c *gin.Context) {
 			HttpOnly: true,
 			Secure:   false, // HTTPS에서만 쿠키 전송
 			Domain:   "",    // 외부 도메인 설정
+			SameSite: http.SameSiteNoneMode,
 			// SameSite: http.SameSiteLaxMode, // SameSite 설정 (Strict 모드)
 		}
 		rTcookie := &http.Cookie{
@@ -255,13 +255,14 @@ func oAuthLogin(c *gin.Context) {
 		// 쿠키 설정
 		http.SetCookie(c.Writer, aTcookie)
 		http.SetCookie(c.Writer, rTcookie)
+
 		// at, err := c.Cookie(`accessToken`)
 		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", rootURI, false, true)
 		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 
 		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
 		c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
-
+		c.Request.Header.Set(`Host`, rootURI)
 		fmt.Println(c.Cookie(`accessToken`))
 		c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
