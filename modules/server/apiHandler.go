@@ -2,9 +2,7 @@ package server
 
 import (
 	. "cinephile/modules/api"
-	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
 )
@@ -223,49 +221,53 @@ func oAuthLogin(c *gin.Context) {
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		home := c.Request.Referer()
-		parsedURL, err := url.Parse(home)
+		// home := c.Request.Referer()
+		// parsedURL, err := url.Parse(home)
 		if err != nil {
 			c.String(500, "URL 파싱에 실패했습니다.")
 			return
 		}
-		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		aTcookie := &http.Cookie{
-			Name:  "accessToken",
-			Value: tokens.AccessToken,
-			Path:  "/",
-			// Expires:  time.Now().Add(time.Duration(tokens.Expire)),
-			// HttpOnly: true,
-			// Secure:   false, // HTTPS에서만 쿠키 전송
-			// Domain:   "",    // 외부 도메인 설정
-			// SameSite: http.SameSiteNoneMode,
-			// SameSite: http.SameSiteLaxMode, // SameSite 설정 (Strict 모드)
-		}
-		rTcookie := &http.Cookie{
-			Name:  "refreshToken",
-			Value: tokens.RefreshToken,
-			Path:  "/",
-			// Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
-			// HttpOnly: true,
-			// Secure:   false,   // HTTPS에서만 쿠키 전송
-			// Domain:   rootURI, // 외부 도메인 설정
-			// SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
-		}
+		// rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+		c.SetCookie("access_token", tokens.AccessToken, 3600, "/", "localhost", false, true)
 
-		// 쿠키 설정
-		http.SetCookie(c.Writer, aTcookie)
-		http.SetCookie(c.Writer, rTcookie)
+		// Redirect the user back to the client (localhost:3000)
+		c.Redirect(http.StatusFound, "http://localhost:3000")
+		// aTcookie := &http.Cookie{
+		// 	Name:  "accessToken",
+		// 	Value: tokens.AccessToken,
+		// 	Path:  "/",
+		// 	// Expires:  time.Now().Add(time.Duration(tokens.Expire)),
+		// 	// HttpOnly: true,
+		// 	// Secure:   false, // HTTPS에서만 쿠키 전송
+		// 	// Domain:   "",    // 외부 도메인 설정
+		// 	// SameSite: http.SameSiteNoneMode,
+		// 	// SameSite: http.SameSiteLaxMode, // SameSite 설정 (Strict 모드)
+		// }
+		// rTcookie := &http.Cookie{
+		// 	Name:  "refreshToken",
+		// 	Value: tokens.RefreshToken,
+		// 	Path:  "/",
+		// 	// Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
+		// 	// HttpOnly: true,
+		// 	// Secure:   false,   // HTTPS에서만 쿠키 전송
+		// 	// Domain:   rootURI, // 외부 도메인 설정
+		// 	// SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
+		// }
 
-		// at, err := c.Cookie(`accessToken`)
-		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", rootURI, false, true)
-		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
+		// // 쿠키 설정
+		// http.SetCookie(c.Writer, aTcookie)
+		// http.SetCookie(c.Writer, rTcookie)
 
-		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
-		c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
-		c.Request.Header.Set(`Host`, rootURI)
-		fmt.Println("RootURI : ", rootURI)
-		fmt.Println("호스트 : ", c.Request.Header.Get(`Host`))
-		c.Redirect(http.StatusFound, rootURI)
+		// // at, err := c.Cookie(`accessToken`)
+		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", rootURI, false, true)
+		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
+
+		// c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
+		// c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
+		// c.Request.Header.Set(`Host`, rootURI)
+		// fmt.Println("RootURI : ", rootURI)
+		// fmt.Println("호스트 : ", c.Request.Header.Get(`Host`))
+		// c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
 }
