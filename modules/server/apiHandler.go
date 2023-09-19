@@ -25,7 +25,7 @@ func getThreads(c *gin.Context) {
 	var threads []Thread
 	var err error
 	var cursor int
-	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "google.com", false, true)
+	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "", false, true)
 	if !valid {
 		threads, err, cursor = GetThreadsWithRecommend(c)
 	} else {
@@ -256,8 +256,9 @@ func oAuthLogin(c *gin.Context) {
 		// at, err := c.Cookie(`accessToken`)
 		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
 		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
-		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
-		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", rootURI, false, true)
+
+		c.SetCookie("accessToken", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		c.SetCookie("refreshToken", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
