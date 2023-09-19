@@ -237,9 +237,8 @@ func oAuthLogin(c *gin.Context) {
 			Value:    tokens.AccessToken,
 			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
 			HttpOnly: true,
-			SameSite: http.SameSiteNoneMode, // SameSite 설정 (외부 도메인으로 전송)
-			Secure:   true,                  // HTTPS에서만 쿠키 전송
-			Domain:   ".localhost",          // 외부 도메인 설정
+			Secure:   false, // HTTPS에서만 쿠키 전송
+			Domain:   "",    // 외부 도메인 설정
 			// 	SameSite: http.SameSiteNoneMode, // SameSite 설정 (Strict 모드)
 		}
 		rTcookie := &http.Cookie{
