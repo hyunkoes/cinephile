@@ -25,7 +25,7 @@ func getThreads(c *gin.Context) {
 	var threads []Thread
 	var err error
 	var cursor int
-	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "", false, true)
+	c.SetCookie("TEST", "TESTTEST", 10000000, "/", "google.com", false, true)
 	if !valid {
 		threads, err, cursor = GetThreadsWithRecommend(c)
 	} else {
