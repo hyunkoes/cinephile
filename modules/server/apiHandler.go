@@ -263,8 +263,8 @@ func oAuthLogin(c *gin.Context) {
 		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
 		c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 		c.Request.Header.Set(`Host`, rootURI)
-		fmt.Println(c.Cookie(`accessToken`))
-		c.Redirect(http.StatusFound, rootURI)
+		fmt.Println(c.Request.Header.Get(`Host`))
+		// c.Redirect(http.StatusFound, rootURI)
 		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
 	}
 }

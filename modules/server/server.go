@@ -19,10 +19,7 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
-		AllowCredentials: true,
-	}))
+	r.Use(cors.Default())
 	docs.SwaggerInfo.BasePath = "/api"
 	api := r.Group("/api")
 
