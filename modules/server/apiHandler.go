@@ -244,11 +244,11 @@ func oAuthLogin(c *gin.Context) {
 		rTcookie := &http.Cookie{
 			Name:     "refreshToken",
 			Value:    tokens.RefreshToken,
-			Path:     rootURI,
+			Path:     "/",
 			Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
 			HttpOnly: true,
-			Secure:   false, // HTTPS에서만 쿠키 전송
-			Domain:   "",    // 외부 도메인 설정
+			Secure:   false,   // HTTPS에서만 쿠키 전송
+			Domain:   rootURI, // 외부 도메인 설정
 			// SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
 		}
 
@@ -256,10 +256,10 @@ func oAuthLogin(c *gin.Context) {
 		http.SetCookie(c.Writer, aTcookie)
 		http.SetCookie(c.Writer, rTcookie)
 		// at, err := c.Cookie(`accessToken`)
-		// c.SetCookie("TEST111", "TESTTEST", 10000000, "/", "", false, true)
-		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
+		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", rootURI, false, true)
+		c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
 
-		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
 		c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 
 		fmt.Println(c.Cookie(`accessToken`))
