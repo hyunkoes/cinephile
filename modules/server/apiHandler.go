@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -231,46 +230,8 @@ func oAuthLogin(c *gin.Context) {
 			return
 		}
 		rootURI := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-		// c.SetCookie("access_token", tokens.AccessToken, 3600, "/", "localhost", false, true)
-
-		// Redirect the user back to the client (localhost:3000)
-		// c.Redirect(http.StatusFound, "http://localhost:3000")
-		aTcookie := &http.Cookie{
-			Name:     "accessToken",
-			Value:    tokens.AccessToken,
-			Path:     "/",
-			Expires:  time.Now().Add(time.Duration(tokens.Expire)),
-			HttpOnly: true,
-			Secure:   true, // HTTPS에서만 쿠키 전송
-			Domain:   "",   // 외부 도메인 설정
-			SameSite: http.SameSiteNoneMode,
-			// SameSite: http.SameSiteLaxMode, // SameSite 설정 (Strict 모드)
-		}
-		// rTcookie := &http.Cookie{
-		// 	Name:  "refreshToken",
-		// 	Value: tokens.RefreshToken,
-		// 	Path:  "/",
-		// 	// Expires:  time.Now().Add(time.Duration(tokens.RefreshExpire)),
-		// 	// HttpOnly: true,
-		// 	// Secure:   false,   // HTTPS에서만 쿠키 전송
-		// 	// Domain:   rootURI, // 외부 도메인 설정
-		// 	// SameSite: http.SameSiteStrictMode, // SameSite 설정 (Strict 모드)
-		// }
-
-		// // 쿠키 설정
-		http.SetCookie(c.Writer, aTcookie)
-		// http.SetCookie(c.Writer, rTcookie)
-
-		// // at, err := c.Cookie(`accessToken`)
-		c.SetCookie("TEST111", "TESTTEST", 10000000, "/", rootURI, false, true)
-		// c.SetCookie("TEST222", "TESTTEST", 10000000, "/", "", false, true)
-
-		// c.SetCookie("at", tokens.AccessToken, tokens.Expire, "/", rootURI, false, true)
-		// c.SetCookie("rt", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
-		// c.Request.Header.Set(`Host`, rootURI)
-		// fmt.Println("RootURI : ", rootURI)
-		// fmt.Println("호스트 : ", c.Request.Header.Get(`Host`))
-		// c.Redirect(http.StatusFound, rootURI)
-		// c.JSON(200, gin.H{"cookie": at, "url": rootURI})
+		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
+		c.Redirect(http.StatusFound, rootURI)
 	}
 }
