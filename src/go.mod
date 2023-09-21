@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.35
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.81
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.7.1
