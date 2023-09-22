@@ -12,7 +12,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/kakao"
@@ -33,10 +32,6 @@ var GoogleOAuthConf *oauth2.Config
 var KakaoOAuthConf *oauth2.Config
 
 func init() {
-	err := godotenv.Load(".auth.env")
-	if err != nil {
-		panic(err)
-	}
 	GoogleOAuthConf = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -66,6 +61,7 @@ func RandToken() string {
 func getKakaoInfo(token string) (string, error) {
 	header := "Bearer " + token
 	_ = header
+
 	return "", nil
 }
 func OAuthLogin(c *gin.Context) (Token, error) {
