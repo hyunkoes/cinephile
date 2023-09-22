@@ -11,6 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.7.1
+	github.com/joho/godotenv v1.5.1
 	github.com/spf13/viper v1.16.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
