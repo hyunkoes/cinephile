@@ -1,7 +1,5 @@
 #!/bin/sh
 
-mkdir src/weights
-
 env="$1"
 case "$1" in
 	dev) # dev env up
