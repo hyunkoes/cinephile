@@ -3,23 +3,23 @@
 env="$1"
 case "$1" in
 	dev) # dev env up
-        docker compose -f "docker/docker-compose.dev.yaml" up --build cinephile_mysql -d
+        docker-compose -f "docker/docker-compose.dev.yaml" up  -d --build cinephile_mysql
         ./check-db-ready.sh $env
-        docker compose -f "docker/docker-compose.dev.yaml" up --build cinephile_server nginx
+        docker-compose -f "docker/docker-compose.dev.yaml" up --build cinephile_server nginx
 	;;
 	deploy)
 		#release env up
-        docker compose -f "docker/docker-compose.prod.yaml" up --build cinephile_mysql -d
+        docker-compose -f "docker/docker-compose.prod.yaml" up -d --build cinephile_mysql
         ./check-db-ready.sh $env
-        docker compose -f "docker/docker-compose.prod.yaml" up --build cinephile_server nginx
+        docker-compose -f "docker/docker-compose.prod.yaml" up -d --build cinephile_server nginx
 	;;
     local)
-        docker compose -f "docker/docker-compose.local.yaml" up --build cinephile_mysql -d
+        docker-compose -f "docker/docker-compose.local.yaml" up -d --build cinephile_mysql
         ./check-db-ready.sh $env
     ;;
 	down) # env down
 		if [ "$2" == "" ] ; then
-			docker compose -f "docker/docker-compose.yaml" down
+			docker-compose -f "docker/docker-compose.yaml" down
 		else
 			echo "-down : No option"
 		fi
