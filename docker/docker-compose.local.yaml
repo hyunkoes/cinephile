@@ -4,7 +4,6 @@ services:
     build:
       context: mysql/
     container_name: cinephile_mysql_local
-    restart: always
     env_file:
       - ../.env.local
     volumes:

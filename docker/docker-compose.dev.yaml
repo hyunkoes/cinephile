@@ -27,7 +27,6 @@ services:
     build:
       context: mysql/
     container_name: cinephile_mysql_dev
-    restart: always
     env_file:
       - ../.env.dev
     volumes:
