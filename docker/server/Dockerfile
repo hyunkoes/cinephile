@@ -1,3 +1,3 @@
 FROM golang:latest
 
-ADD ../src /app
+WORKDIR /cinephile/src

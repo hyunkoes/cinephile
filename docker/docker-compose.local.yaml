@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  cinephile_mysql:
+    build:
+      context: mysql/
+    container_name: cinephile_mysql_local
+    restart: always
+    env_file:
+      - ../.env.local
+    volumes:
+     - ./db_volume:/var/lib/mysql
+     - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+     - ./mysql/my.cnf:/etc/my.cnf
+    ports:
+     - '3306:3306'
+    command:
+      - --character-set-server=utf8mb4 
+      - --collation-server=utf8mb4_general_ci
