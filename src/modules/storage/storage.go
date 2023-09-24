@@ -3,13 +3,18 @@ package storage
 import (
 	"cinephile/modules/env"
 	"database/sql"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 var db *sql.DB
 
 func init() {
+	if os.Getenv(`env`) == "" {
+		godotenv.Load(`.env.local`)
+	}
 	connDB()
 }
 func GetConn() *sql.DB {
