@@ -1,26 +1,31 @@
 package storage
 
 import (
+	"cinephile/modules/env"
 	"database/sql"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 var db *sql.DB
 
 func init() {
+	if os.Getenv(`env`) == "" {
+		godotenv.Load(`.env.local`)
+	}
 	connDB()
-
 }
 func GetConn() *sql.DB {
-	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true&charset=utf8")
+	DB, err := sql.Open("mysql", env.GetMysqlDNS())
 	if err != nil {
 		panic(err)
 	}
 	return DB
 }
 func connDB() {
-	DB, err := sql.Open("mysql", "root:Cinephile1!@tcp(127.0.0.1:3306)/cinephile?parseTime=true&charset=utf8")
+	DB, err := sql.Open("mysql", env.GetMysqlDNS())
 	if err != nil {
 		panic(err)
 	}

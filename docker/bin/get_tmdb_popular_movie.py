@@ -27,11 +27,19 @@ def get_movie_list(token, page):
     }
     response = requests.get(url, headers=headers).json()
     return  response['results']
-
+def genre_define(token):
+    url = "https://api.themoviedb.org/3/genre/movie/list?language={}".format("ko-kr")
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer {}".format(token)
+    }
+    response = requests.get(url, headers=headers).json()
+    return  response['genres']
+    
 def movies_to_sql(movies):
     movies.sort(key=lambda x: x.get('id'))
     movie_sql = 'INSERT INTO movie VALUES ({},{},"{}","{}","{}","{}","{}");\n'
-    genre_sql = 'INSERT INTO genre VALUES ({}, {});\n'
+    genre_sql = 'INSERT INTO genre_relation VALUES ({}, {});\n'
     channel_sql = 'INSERT INTO channel (movie_id) VALUES ({});\n'
     movie_sql_total = ""
     genre_sql_total = ""
@@ -43,7 +51,12 @@ def movies_to_sql(movies):
         for genre in movie['genre_ids']:
             genre_sql_total += genre_sql.format(movie['id'],genre)
     return movie_sql_total + genre_sql_total + channel_sql_total
-
+def genre_to_sql(genres):
+    genre_sql = 'INSERT INTO genre VALUES ({}, "{}");\n'
+    genre_sql_total = ""
+    for genre in genres :
+        genre_sql_total += genre_sql.format(genre['id'],genre['name'])
+    return genre_sql_total
 
 
 def run_script():
@@ -55,7 +68,7 @@ def run_script():
             break
         movies = movies+next_movies
         time.sleep(1)
-    sql = movies_to_sql(movies)
+    sql = genre_to_sql(genre_define(token)) + movies_to_sql(movies) 
     with open('../mysql/initdb.d/popular_movie.sql','w+') as f:
         f.write(sql)
     

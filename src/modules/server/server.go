@@ -2,8 +2,14 @@ package server
 
 import (
 	"fmt"
+	"os"
 
+	docs "cinephile/docs"
 	. "cinephile/modules/storage"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	swaggerFiles "github.com/swaggo/files"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,10 +18,14 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
+	docs.SwaggerInfo.BasePath = "/api"
+	api := r.Group("/api")
+
+	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {
 		panic(fmt.Errorf("mysql is off status"))
 	}
-	api := r.Group("/api")
+
 	RegistApiHandler(api)
 	r.Run(port)
 }
@@ -24,7 +34,12 @@ func RegistApiHandler(api *gin.RouterGroup) {
 	RegistChannelApiHandler(api)
 	RegistMovieApiHandler(api)
 	RegistUserApiHandler(api)
+	RegistAccountApiHandler(api)
 	RegistThreadApiHandler(api)
+	RegistSwaggerApiHandler(api)
+}
+func RegistSwaggerApiHandler(api *gin.RouterGroup) {
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
@@ -70,6 +85,8 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	400 -> No more thread
 	*/
 	// api.POST("/auth", autheticate)
+	// kakao, google 둘 다 여기로 callback, platform -> parameter
+	api.GET("/oauth/callback", oAuthLogin)
 
 }
 func RegistUserApiHandler(api *gin.RouterGroup) {
@@ -80,6 +97,7 @@ func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
+	api.GET("/users", getUser)
 	// api.PUT("/user", updateUser)
 	/*  Reply			200 -> thread list
 	400 -> No more thread
@@ -96,8 +114,11 @@ func RegistMovieApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	// api.GET("/movie", getMovie)
+	api.GET("/movies", getMovie)
+
 	api.GET("/movies/search", searchMovie)
+
+	api.GET("/movies/hot", getHotMovies)
 }
 
 func RegistChannelApiHandler(api *gin.RouterGroup) {

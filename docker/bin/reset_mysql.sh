@@ -6,4 +6,4 @@ docker rm -f $id
 
 sudo rm -rf ../db_volume
 
-docker-compose -f ../docker-compose.yaml up --force-recreate --build 
+docker-compose -f ../docker-compose.yaml up --force-recreate --build -d

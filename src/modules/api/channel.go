@@ -4,6 +4,7 @@ import (
 	"cinephile/modules/storage"
 	"errors"
 
+	. "cinephile/modules/dto"
 	. "cinephile/modules/tmdb"
 
 	"github.com/gin-gonic/gin"
@@ -39,4 +40,21 @@ func GetChannel(c *gin.Context) (Channel, error) {
 	_ = err
 	channel.Movie.Poster_path = TmdbPosterAPI(channel.Movie.Poster_path)
 	return channel, nil
+}
+
+/*
+Return subscribe request is success or not
+Used in : Subscribe specific channel
+*/
+func SubscribeChannel(c *gin.Context) error {
+	// db := storage.DB()
+	// user := c.GetHeader(`user`)
+	// channel_id, valid := c.GetQuery(`channel_id`)
+	// if !valid {
+	// 	return errors.New("Invalid channel_id")
+	// }
+	// var length int
+	// result, err = db.Query(`select count(*) from user_subscribe`)
+	// i := len(sql.Rows)
+	return nil
 }

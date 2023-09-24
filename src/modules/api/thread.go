@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	. "cinephile/modules/dto"
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
 	. "cinephile/modules/tmdb"
@@ -11,30 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//	func GetThreads(c *gin.Context) ([]Thread, error) {
-//		db := storage.DB()
-//		var length int
-//		_ = db.QueryRow(`select count(*) from thread`).Scan(&length)
-//		if length == 0 {
-//			return []Thread{}, errors.New("Nothing to show")
-//		}
-//		rows, err := db.Query(`select * from thread`)
-//		if err := ErrChecker.Check(err); err != nil {
-//			return []Thread{}, err
-//		}
-//		defer rows.Close()
-//		Threads := make([]Thread, 0)
-//		var thread Thread
-//		for rows.Next() {
-//			err = rows.Scan(&thread.Thread_id, &thread.Channel.Id, &thread.Content,
-//				&thread.Author.Id, &thread.Parent, &thread.Created_at, &thread.Updated_at)
-//			if err := ErrChecker.Check(err); err != nil {
-//				return []Thread{}, err
-//			}
-//			Threads = append(Threads, thread)
-//		}
-//		return Threads, nil
-//	}
 func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
@@ -45,7 +22,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	var length int
 	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor + ` and parent = ` + parent_id).Scan(&length)
 	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show"), 0
+		return []Thread{}, nil, 0
 	}
 	query := `
 	SELECT
@@ -55,10 +32,15 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		m.kr_title,
 		m.movie_id,
 		m.poster_path,
-		t.email,
+		u.email,
+		u.user_name,
+		u.photo,
 		t.parent,
+		t.title,
 		t.content,
+		t.like_count,
 		tr.is_recommended,
+		T.created_at,
 		t.updated_at
 	FROM
 		thread AS t
@@ -68,6 +50,8 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
+	LEFT JOIN
+		user AS u ON u.email = t.email
 	WHERE
 		t.parent = ` + parent_id + `  
 		and 
@@ -85,9 +69,10 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	Threads := make([]Thread, 0)
 	var thread Thread
 	var is_recommended sql.NullBool
+	var title sql.NullString
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -96,29 +81,41 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		} else {
 			thread.Is_recommended = is_recommended.Bool
 		}
+		if !title.Valid {
+			thread.Title = ""
+		} else {
+			thread.Title = title.String
+		}
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
 	last_cursor := Threads[len(Threads)-1].Thread_id
 	return Threads, nil, last_cursor
 }
-func GetThread(c *gin.Context) (Thread_detail, error) {
+func GetThread(c *gin.Context) (Thread, error) {
 	thread_id, valid := c.GetQuery("thread_id")
 	if !valid {
-		return Thread_detail{}, errors.New("Invalid query string")
+		return Thread{}, errors.New("Invalid query string")
 	}
 	db := storage.DB()
 	query := `
 	SELECT
 		t.thread_id,
 		t.channel_id,
+		c.thread_count,
 		m.original_title,
 		m.kr_title,
 		m.movie_id,
-		t.email,
+		m.poster_path,
+		u.email,
+		u.user_name,
+		u.photo,
 		t.parent,
+		t.title,
 		t.content,
+		t.like_count,
 		tr.is_recommended,
+		t.created_at,
 		t.updated_at
 	FROM
 		thread AS t
@@ -128,138 +125,80 @@ func GetThread(c *gin.Context) (Thread_detail, error) {
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
+	LEFT JOIN
+		user AS u ON u.email = t.email
 	WHERE
 		t.thread_id = ` + thread_id + `;
 	`
-
-	child_query := `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		t.email,
-		t.parent,
-		t.content,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE
-		t.parent = ` + thread_id + `
-	ORDER BY
-		t.thread_id;
-	`
-	var thread Thread_detail
+	var thread Thread
 	var is_recommended sql.NullBool
-	err := db.QueryRow(query).Scan(&thread.Self.Thread_id, &thread.Self.Channel.Channel_id, &thread.Self.Channel.Movie.Original_title,
-		&thread.Self.Channel.Movie.Kr_title, &thread.Self.Channel.Movie.Movie_id, &thread.Self.Author.Id, &thread.Self.Parent_id, &thread.Self.Content, &is_recommended, &thread.Self.Updated_at)
+	var title sql.NullString
+	err := db.QueryRow(query).Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Thread_count, &thread.Channel.Movie.Original_title,
+		&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 	if !is_recommended.Valid {
-		thread.Self.Is_recommended = false
+		thread.Is_recommended = false
 	} else {
-		thread.Self.Is_recommended = is_recommended.Bool
+		thread.Is_recommended = is_recommended.Bool
 	}
-	rows, err := db.Query(child_query)
-	if err := ErrChecker.Check(err); err != nil {
-		return Thread_detail{}, err
+	if !title.Valid {
+		thread.Title = ""
+	} else {
+		thread.Title = title.String
 	}
-	parent_id := thread.Self.Parent_id
-	parent_query := `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		t.email,
-		t.parent,
-		t.content,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE
-		t.thread_id = ` + string(parent_id) + `;`
-	if parent_id != -1 {
-		err = db.QueryRow(parent_query).Scan(&thread.Parent.Thread_id, &thread.Parent.Channel.Channel_id, &thread.Parent.Channel.Movie.Original_title,
-			&thread.Parent.Channel.Movie.Kr_title, &thread.Parent.Channel.Movie.Movie_id, &thread.Parent.Author.Id, &thread.Parent.Parent_id, &thread.Parent.Content, &is_recommended, &thread.Parent.Updated_at)
-		if !is_recommended.Valid {
-			thread.Parent.Is_recommended = false
-		} else {
-			thread.Parent.Is_recommended = is_recommended.Bool
-		}
+	if err != nil {
+		return Thread{}, err
 	}
-
-	var child_thread Thread
-	thread.Child = make([]Thread, 0)
-
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&child_thread.Thread_id, &child_thread.Channel.Channel_id, &child_thread.Channel.Movie.Original_title, &child_thread.Channel.Movie.Kr_title, &child_thread.Channel.Movie.Movie_id,
-			&child_thread.Author.Id, &child_thread.Parent_id, &child_thread.Content, &is_recommended, &child_thread.Updated_at)
-		if err := ErrChecker.Check(err); err != nil {
-			return Thread_detail{}, err
-		}
-		if !is_recommended.Valid {
-			child_thread.Is_recommended = false
-		} else {
-			child_thread.Is_recommended = is_recommended.Bool
-		}
-		thread.Child = append(thread.Child, child_thread)
-	}
-
+	thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 	return thread, nil
 }
 
 func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	if cursor == "-1" || !valid {
+	if !valid {
 		cursor = "2147483647"
 	}
 	var length int
-	_ = db.QueryRow(`select count(*) from thread where thread_id < ` + cursor).Scan(&length)
+	query := `select count(*) from thread where thread_id < ` + cursor
+	_ = db.QueryRow(query).Scan(&length)
 	if length == 0 {
-		return []Thread{}, errors.New("Nothing to show"), 0
+		return []Thread{}, nil, 0
 	}
-	query := `
-	SELECT
-		t.thread_id,
-		t.channel_id,
-		m.original_title,
-		m.kr_title,
-		m.movie_id,
-		m.poster_path,
-		t.email,
-		t.parent,
-		t.content,
-		tr.is_recommended,
-		t.updated_at
-	FROM
-		thread AS t
-	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
-	LEFT JOIN
-		channel AS c ON t.channel_id = c.channel_id
-	LEFT JOIN
-		movie AS m ON c.movie_id = m.movie_id
-	WHERE t.thread_id < ` + cursor + `
-	ORDER BY
-		t.thread_id DESC
-	LIMIT 10;
+	query = `
+SELECT
+	t.thread_id,
+	t.channel_id,
+	m.original_title,
+	m.kr_title,
+	m.movie_id,
+	m.poster_path,
+	u.email,
+	u.user_name,
+	u.photo,
+	t.parent,
+	t.title,
+	t.content,
+	t.like_count,
+	tr.is_recommended,
+	t.created_at,
+	t.updated_at
+FROM
+	thread AS t
+LEFT JOIN
+	thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+LEFT JOIN
+	channel AS c ON t.channel_id = c.channel_id
+LEFT JOIN
+	movie AS m ON c.movie_id = m.movie_id
+LEFT JOIN
+	user AS u ON u.email = t.email
+WHERE 
+	t.is_exposed = true
+	and
+	t.thread_id < ` + cursor + `
+ORDER BY
+	t.thread_id DESC
+LIMIT 11;
 	`
 	rows, err := db.Query(query)
 
@@ -270,9 +209,10 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	Threads := make([]Thread, 0)
 	var thread Thread
 	var is_recommended sql.NullBool
+	var title sql.NullString
 	for rows.Next() {
 		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
-			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Parent_id, &thread.Content, &is_recommended, &thread.Updated_at)
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
 		if err := ErrChecker.Check(err); err != nil {
 			return []Thread{}, err, 0
 		}
@@ -281,15 +221,24 @@ func GetThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		} else {
 			thread.Is_recommended = is_recommended.Bool
 		}
+		if !title.Valid {
+			thread.Title = ""
+		} else {
+			thread.Title = title.String
+		}
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
 		Threads = append(Threads, thread)
 	}
-	last_cursor := Threads[len(Threads)-1].Thread_id
+	last_cursor := -1
+	if len(Threads) > 10 {
+		Threads = Threads[:len(Threads)-1]
+		last_cursor = Threads[len(Threads)-1].Thread_id
+	}
 	return Threads, nil, last_cursor
 }
 
 func RegistThread(c *gin.Context) error {
-	var reqBody Thread
+	var reqBody ThreadRegistForm
 	user := c.GetHeader("user")
 	err := c.ShouldBind(&reqBody)
 
@@ -300,11 +249,14 @@ func RegistThread(c *gin.Context) error {
 		reqBody.Parent_id = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,content,email,parent) values(?,?,?,?)`, reqBody.Channel.Channel_id, reqBody.Content, user, reqBody.Parent_id)
+	_, err = db.Exec(`Insert into thread (channel_id,title,content,email,parent,is_exposed) values(?,?,?,?,?,?)`, reqBody.Channel_id, reqBody.Title, reqBody.Content, user, reqBody.Parent_id, reqBody.Is_exposed)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
-
+	_, err = db.Exec(`Update channel set thread_count = thread_count + 1 where channel_id = ?`, reqBody.Channel_id)
+	if err := ErrChecker.Check(err); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -322,9 +274,11 @@ func ChangeRecommendThread(c *gin.Context) error {
 	if err == sql.ErrNoRows {
 		// No row -> is_recommended : true
 		_, err = db.Exec(`Insert into thread_recommend (thread_id, email, is_recommended) values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
+
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
+		_, err = db.Exec(`Update thread set like_count = like_count + 1 where thread_id = ? `, reqBody.Thread_id)
 		// row 추가
 		return nil
 	}
@@ -334,6 +288,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
+		_, err = db.Exec(`Update thread set like_count = like_count - 1 where thread_id = ? `, reqBody.Thread_id)
 		return nil
 	}
 	// Not is_recommneded -> is_recommend : true
@@ -341,6 +296,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
+	_, err = db.Exec(`Update thread set like_count = like_count + 1 where thread_id = ? `, reqBody.Thread_id)
 	return nil
 }
 
