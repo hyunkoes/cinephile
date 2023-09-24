@@ -1,6 +1,6 @@
 # !bin/bash
 # Check if database ready
-MAX_TRY=8
+MAX_TRY=15
 CURRENT_TRY=0
 
 # Check parm
