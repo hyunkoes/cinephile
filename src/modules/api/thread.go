@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	. "cinephile/modules/dto"
 	ErrChecker "cinephile/modules/errors"
 	"cinephile/modules/storage"
 	. "cinephile/modules/tmdb"

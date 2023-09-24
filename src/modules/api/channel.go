@@ -4,6 +4,7 @@ import (
 	"cinephile/modules/storage"
 	"errors"
 
+	. "cinephile/modules/dto"
 	. "cinephile/modules/tmdb"
 
 	"github.com/gin-gonic/gin"

@@ -1,10 +1,13 @@
 package api
 
 import (
+	. "cinephile/modules/dto"
+	"cinephile/modules/logging"
 	"cinephile/modules/storage"
 	. "cinephile/modules/tmdb"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -120,16 +123,16 @@ Used in : Test
 */
 func GetMovies(c *gin.Context) ([]Movie, error) {
 	db := storage.DB()
-	var length int
-	_ = db.QueryRow(`select count(*) from movie`).Scan(&length)
-	rows, _ := db.Query(`select * from movie`)
+	rows, _ := db.Query(`select * from movie limit 10`)
 	defer rows.Close()
 	var mov Movie
 	var movies []Movie
+	fmt.Println("CALL!")
 	for rows.Next() {
 		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &mov.Original_title,
 			&mov.Kr_title, &mov.Poster_path, &mov.Release_date, &mov.Overview)
 		if err != nil {
+			logging.Warn(err)
 			return []Movie{}, err
 		}
 		mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
@@ -300,3 +303,23 @@ func SearchMovie(c *gin.Context) ([]MovieSearch, int, error) {
 
 	return movies, lastCursor, nil
 }
+
+// func GetMovies() ([]Movie, error) {
+// 	movies := make([]Movie, 0)
+// 	db := storage.DB()
+// 	rows, err := db.Query(`select * from movie`)
+// 	if err != nil {
+// 		return []Movie{}, err
+// 	}
+// 	for rows.Next() {
+// 		var movie Movie
+// 		err := rows.Scan(&movie.Movie_id, &movie.Is_adult, &movie.Original_title, &movie.Kr_title, &movie.Poster_path, &movie.Release_date, &movie.Overview)
+// 		if err != nil {
+// 			return []Movie{}, err
+// 		}
+// 		movie.Poster_path = TmdbPosterAPI(movie.Poster_path)
+
+// 		movies = append(movies, movie)
+// 	}
+// 	return movies, nil
+// }
