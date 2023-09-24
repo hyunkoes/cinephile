@@ -41,6 +41,7 @@ services:
       - --character-set-server=utf8mb4 
       - --collation-server=utf8mb4_general_ci
   certbot:
+    container_name: certbot
     image: certbot/certbot:latest
     command: certonly --webroot --webroot-path=/var/www/html --email chs29359685@gmail.com --agree-tos --no-eff-email --force-renewal -d api.cinephile.site
     volumes:
