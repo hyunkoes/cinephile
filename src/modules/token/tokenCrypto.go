@@ -1,5 +1,0 @@
-package token
-
-func init() {
-
-}
