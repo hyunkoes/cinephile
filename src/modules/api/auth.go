@@ -3,15 +3,14 @@ package api
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
 
+	. "cinephile/modules/dto"
+	oauth "cinephile/modules/oauth"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/kakao"
@@ -32,6 +31,9 @@ var GoogleOAuthConf *oauth2.Config
 var KakaoOAuthConf *oauth2.Config
 
 func init() {
+	if os.Getenv(`env`) == "" {
+		godotenv.Load(`.env.local`)
+	}
 	GoogleOAuthConf = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
@@ -58,41 +60,64 @@ func RandToken() string {
 	rand.Read(b)
 	return base64.StdEncoding.EncodeToString(b)
 }
-func getKakaoInfo(token string) (string, error) {
-	header := "Bearer " + token
-	_ = header
-
-	return "", nil
+func GetGoogleInfo(c *gin.Context) (OauthInfo, error) {
+	token, err := c.Cookie(`access_token`)
+	if err != nil {
+		return OauthInfo{}, err
+	}
+	return oauth.GetGoogleTokenInfo(token)
+}
+func GetKakaoInfo(c *gin.Context) (OauthInfo, error) {
+	token, err := c.Cookie(`access_token`)
+	if err != nil {
+		return OauthInfo{}, err
+	}
+	return oauth.GetKakaoTokenInfo(token)
+}
+func getInfo(token string, platform string) (int, error) {
+	if platform == "kakao" {
+		return getKakaoTokenID(token)
+	}
+	if platform == "google" {
+		return getGoogleTokenID(token)
+	}
+	return 0, errors.New("Invalid platform")
+}
+func getKakaoTokenID(token string) (int, error) {
+	return oauth.GetKakaoTokenID(token)
+}
+func getGoogleTokenID(token string) (int, error) {
+	return oauth.GetGoogleTokenID(token)
+}
+func getKakaoInfo(token string) (OauthInfo, error) {
+	return oauth.GetKakaoTokenInfo(token)
+}
+func getGoogleInfo(token string) (OauthInfo, error) {
+	return OauthInfo{}, nil
+}
+func GetOAuthInfo(token string, platform string) (OauthInfo, error) {
+	if platform == "kakao" {
+		return getKakaoInfo(token)
+	}
+	if platform == "google" {
+		return getGoogleInfo(token)
+	}
+	return OauthInfo{}, errors.New("Invalid platform")
 }
 func OAuthLogin(c *gin.Context) (Token, error) {
+	platform, valid := c.GetQuery(`platform`)
+	if !valid {
+		return Token{}, errors.New("Invalid platform parameter")
+	}
+	if platform == "kakao" {
+		return kakaoLogin(c)
+	}
+	return Token{}, nil
+}
+func kakaoLogin(c *gin.Context) (Token, error) {
 	code, valid := c.GetQuery(`code`)
 	if !valid {
 		return Token{}, errors.New("No auth code")
 	}
-
-	data := url.Values{}
-	data.Set("grant_type", "authorization_code")
-	data.Set("client_id", KakaoOAuthConf.ClientID)
-	data.Set("client_secret", KakaoOAuthConf.ClientSecret)
-	data.Set("redirect_uri", KakaoOAuthConf.RedirectURL)
-	data.Set("code", code) // 사용자 인증 후 받은 인증 코드
-	platform := c.GetHeader(`platform`)
-	_ = platform
-	// POST 요청 보내기
-	resp, err := http.PostForm(KakaoOAuthConf.Endpoint.TokenURL, data)
-	if err != nil {
-		fmt.Printf("Kakao token API err : %v\n", err)
-	}
-	defer resp.Body.Close()
-
-	// 응답 바디 읽기
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Kakao token response body err : %v\n", err)
-	}
-	var token Token
-	if err := json.Unmarshal(body, &token); err != nil {
-		return Token{}, err
-	}
-	return token, nil
+	return oauth.KakaoLogin(code)
 }
