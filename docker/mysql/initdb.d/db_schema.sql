@@ -1,10 +1,11 @@
 create table user(
-    email varchar(100),
+    id varchar(100),
+    platform varchar(30),
     -- hashed password
     password varchar(60),
     user_name varchar(30),
-    photo int,
-    primary key (email)
+    photo varchar(255),
+    primary key (id, platform)
 );
 create table movie(
     movie_id int,
@@ -32,9 +33,9 @@ create table thread(
     title varchar(100),
     content text,
     foreign key(channel_id) references channel(channel_id),
-    email varchar(100),
+    id varchar(100),
     parent int default -1,
-    foreign key(email) references user(email),
+    foreign key(id) references user(id),
     like_count int default 0,
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null default current_timestamp on update current_timestamp,
@@ -42,10 +43,10 @@ create table thread(
 );
 create table thread_recommend(
     thread_id int,
-    email varchar(100),
+    id varchar(100),
     is_recommended bool default false,
     foreign key(thread_id) references thread(thread_id),
-    foreign key(email) references user(email),
+    foreign key(id) references user(id),
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null default current_timestamp on update current_timestamp
 );
@@ -61,14 +62,14 @@ create table genre_relation(
     foreign key(genre_id) references genre(genre_id)
 );
 create table user_subscribe(
-    email varchar(100),
-    foreign key(email) references user(email),
+    id varchar(100),
+    foreign key(id) references user(id),
     channel_id int,
     foreign key(channel_id) references channel(channel_id)
 );
 create table user_scrap(
-    email varchar(100),
-    foreign key(email) references user(email),
+    id varchar(100),
+    foreign key(id) references user(id),
     movie_id int,
     foreign key(movie_id) references movie(movie_id)
 );
