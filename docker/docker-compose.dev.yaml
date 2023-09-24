@@ -45,9 +45,9 @@ services:
     image: certbot/certbot:latest
     command: certonly --webroot --webroot-path=/var/www/html --email chs29359685@gmail.com --agree-tos --no-eff-email --force-renewal -d api.cinephile.site
     volumes:
-        - work dir/certbot/conf:/etc/letsencrypt
-        - work dir/certbot/logs:/var/log/letsencrypt
-        - work dir/certbot/data:/var/www/certbot
+        - ./certbot/conf:/etc/letsencrypt
+        - ./certbot/logs:/var/log/letsencrypt
+        - ./certbot/data:/var/www/certbot
   # certbot_t:
   #   depends_on:
   #     - nginx
