@@ -2,6 +2,7 @@ package server
 
 import (
 	. "cinephile/modules/api"
+	. "cinephile/modules/dto"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -186,15 +187,6 @@ func deleteThread(c *gin.Context) {
 	}
 }
 
-func registUser(c *gin.Context) {
-	err := RegistUserForTest(c)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	} else {
-		c.JSON(200, gin.H{"error": nil})
-	}
-}
-
 // @Summary Get Hot 8 movies
 // @Description
 // @Accept json
@@ -220,13 +212,65 @@ func oAuthLogin(c *gin.Context) {
 	tokens, err := OAuthLogin(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+	}
+	referer_domain, valid := c.GetQuery(`state`)
+	if !valid {
+		referer_domain = "cinephile.site"
+	}
+	platform, _ := c.GetQuery(`platform`)
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", false, true)
+	// OAuth info를 불러옴
+	OauthInfo, err := GetOAuthInfo(tokens.AccessToken, platform)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err})
+	}
+	// check user is registered
+	isExist := IsExistUser(OauthInfo, platform)
+	// none -> insert
+	if !isExist {
+		_ = RegistUser(OauthInfo, platform)
+	}
+	c.Redirect(http.StatusFound, referer_domain)
+
+}
+
+// @Summary Get Info from sns resource server
+// @Description Kakao, Google oauth info
+// @Accept json
+// @Produce json
+// @Success 200 {object} OauthInfo
+// @Router /user [get]
+func getUser(c *gin.Context) {
+	user, err := GetUser(c)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
-		referer_domain, valid := c.GetQuery(`state`)
-		if !valid {
-			referer_domain = "cinephile.site"
-		}
-		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", ".cinephile.site", false, true)
-		c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", ".cinephile.site", false, true)
-		c.Redirect(http.StatusFound, referer_domain)
+		c.JSON(200, gin.H{"error": nil, "user": user})
 	}
 }
+
+// @Summary Get Info from sns resource server
+// @Description Kakao, Google oauth info
+// @Accept json
+// @Produce json
+// @Success 200 {object} OauthInfo
+// @Router /user [get]
+func getUsers(c *gin.Context) {
+	users, err := GetUsers()
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(200, gin.H{"error": nil, "users": users})
+	}
+}
+
+// func getUser(c *gin.Context) {
+// 	user, err := GetUser(c)
+// 	if err != nil {
+// 		c.JSON(400, gin.H{"error": err.Error()})
+// 	} else {
+// 		c.JSON(200, gin.H{"error": nil, "user": user})
+// 	}
+// }

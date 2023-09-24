@@ -85,7 +85,7 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	400 -> No more thread
 	*/
 	// api.POST("/auth", autheticate)
-
+	// kakao, google 둘 다 여기로 callback, platform -> parameter
 	api.GET("/oauth/callback", oAuthLogin)
 
 }
@@ -93,11 +93,11 @@ func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
-	api.POST("/test/user", registUser)
 	// api.GET("/user", getUser)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
+	api.GET("/users", getUser)
 	// api.PUT("/user", updateUser)
 	/*  Reply			200 -> thread list
 	400 -> No more thread
