@@ -3,13 +3,13 @@
 env="$1"
 case "$1" in
 	dev) # dev env up
-        docker-compose -f "docker/docker-compose.dev.yaml" up  -d --build cinephile_mysql
+        docker-compose -f "docker/docker-compose.dev.yaml" up  -d --build cinephile_mysql certbot
         ./check-db-ready.sh $env
         docker-compose -f "docker/docker-compose.dev.yaml" up --build cinephile_server nginx
 	;;
 	deploy)
 		#release env up
-        docker-compose -f "docker/docker-compose.prod.yaml" up -d --build cinephile_mysql
+        docker-compose -f "docker/docker-compose.prod.yaml" up -d --build cinephile_mysql certbot
         ./check-db-ready.sh $env
         docker-compose -f "docker/docker-compose.prod.yaml" up -d --build cinephile_server nginx
 	;;
