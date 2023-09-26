@@ -221,6 +221,12 @@ func oAuthLogin(c *gin.Context) {
 	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", false, true)
+
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", true, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", true, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", true, true)
+
 	// OAuth info를 불러옴
 	OauthInfo, err := GetOAuthInfo(tokens.AccessToken, platform)
 	if err != nil {
