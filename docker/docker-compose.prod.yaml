@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  cinephile_server: # golang web
+    build: server/
+    container_name: cinephile_server
+    ports: 
+      - "4000:4000"
+    tty: true
+    env_file:
+      - ../.env.dev
+    volumes:
+      - ../src:/cinephile/src
+    # restart: always
+
+  nginx: # loadbalancer
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/static/error.html:/etc/nginx/static/error.html
+  cinephile_mysql:
+    build:
+      context: mysql/
+    container_name: cinephile_mysql
+    env_file:
+      - ../.env.dev
+    volumes:
+     - ./db_volume:/var/lib/mysql
+     - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+     - ./mysql/my.cnf:/etc/my.cnf
+    ports:
+     - '3306:3306'
+    command:
+      - --character-set-server=utf8mb4 
+      - --collation-server=utf8mb4_general_ci
