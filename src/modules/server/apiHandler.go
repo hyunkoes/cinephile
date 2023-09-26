@@ -215,17 +215,18 @@ func oAuthLogin(c *gin.Context) {
 	}
 	referer_domain, valid := c.GetQuery(`state`)
 	if !valid {
-		referer_domain = ".cinephile.site"
+		referer_domain = "cinephile.site"
 	}
+	cookie_domain := ".cinephile.site"
 	platform, _ := c.GetQuery(`platform`)
-	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", referer_domain, false, true)
-	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", referer_domain, false, true)
-	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", referer_domain, false, true)
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, false, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, false, true)
 
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", referer_domain, true, true)
-	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", referer_domain, true, true)
-	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", referer_domain, true, true)
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, true, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, true, true)
 
 	// OAuth info를 불러옴
 	OauthInfo, err := GetOAuthInfo(tokens.AccessToken, platform)
