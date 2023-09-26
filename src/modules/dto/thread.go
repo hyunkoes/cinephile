@@ -22,6 +22,5 @@ type ThreadRegistForm struct {
 	Is_exposed bool   `json:"isExposed"`
 }
 type RecommendForm struct {
-	Thread_id int    `json:"threadId"`
-	Email     string `json:"email"`
+	Thread_id int `json:"threadId"`
 }

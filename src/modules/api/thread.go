@@ -32,7 +32,7 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 		m.kr_title,
 		m.movie_id,
 		m.poster_path,
-		u.email,
+		u.id,
 		u.user_name,
 		u.photo,
 		t.parent,
@@ -45,13 +45,13 @@ func GetChildThreadsWithRecommend(c *gin.Context) ([]Thread, error, int) {
 	FROM
 		thread AS t
 	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+		thread_recommend AS tr ON t.id = tr.id and t.thread_id = tr.thread_id
 	LEFT JOIN
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
 	LEFT JOIN
-		user AS u ON u.email = t.email
+		user AS u ON u.id = t.id
 	WHERE
 		t.parent = ` + parent_id + `  
 		and 
@@ -107,7 +107,7 @@ func GetThread(c *gin.Context) (Thread, error) {
 		m.kr_title,
 		m.movie_id,
 		m.poster_path,
-		u.email,
+		u.id,
 		u.user_name,
 		u.photo,
 		t.parent,
@@ -120,13 +120,13 @@ func GetThread(c *gin.Context) (Thread, error) {
 	FROM
 		thread AS t
 	LEFT JOIN
-		thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+		thread_recommend AS tr ON t.id = tr.id and t.thread_id = tr.thread_id
 	LEFT JOIN
 		channel AS c ON t.channel_id = c.channel_id
 	LEFT JOIN
 		movie AS m ON c.movie_id = m.movie_id
 	LEFT JOIN
-		user AS u ON u.email = t.email
+		user AS u ON u.id = t.id
 	WHERE
 		t.thread_id = ` + thread_id + `;
 	`
@@ -172,7 +172,7 @@ SELECT
 	m.kr_title,
 	m.movie_id,
 	m.poster_path,
-	u.email,
+	u.id,
 	u.user_name,
 	u.photo,
 	t.parent,
@@ -185,13 +185,13 @@ SELECT
 FROM
 	thread AS t
 LEFT JOIN
-	thread_recommend AS tr ON t.email = tr.email and t.thread_id = tr.thread_id
+	thread_recommend AS tr ON t.id = tr.id and t.thread_id = tr.thread_id
 LEFT JOIN
 	channel AS c ON t.channel_id = c.channel_id
 LEFT JOIN
 	movie AS m ON c.movie_id = m.movie_id
 LEFT JOIN
-	user AS u ON u.email = t.email
+	user AS u ON u.id = t.id
 WHERE 
 	t.is_exposed = true
 	and
@@ -249,7 +249,7 @@ func RegistThread(c *gin.Context) error {
 		reqBody.Parent_id = -1
 	}
 	db := storage.DB()
-	_, err = db.Exec(`Insert into thread (channel_id,title,content,email,parent,is_exposed) values(?,?,?,?,?,?)`, reqBody.Channel_id, reqBody.Title, reqBody.Content, user, reqBody.Parent_id, reqBody.Is_exposed)
+	_, err = db.Exec(`Insert into thread (channel_id,title,content,id,parent,is_exposed) values(?,?,?,?,?,?)`, reqBody.Channel_id, reqBody.Title, reqBody.Content, user, reqBody.Parent_id, reqBody.Is_exposed)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
@@ -262,6 +262,9 @@ func RegistThread(c *gin.Context) error {
 
 func ChangeRecommendThread(c *gin.Context) error {
 	var reqBody RecommendForm
+
+	id, _ := c.Get(`id`)
+
 	err := c.ShouldBind(&reqBody)
 
 	if ErrChecker.Check(err) != nil {
@@ -269,11 +272,11 @@ func ChangeRecommendThread(c *gin.Context) error {
 	}
 	db := storage.DB()
 	var is_recommended bool
-	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and email = ? `, reqBody.Thread_id, reqBody.Email).Scan(&is_recommended)
+	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and id = ? `, reqBody.Thread_id, id).Scan(&is_recommended)
 
 	if err == sql.ErrNoRows {
 		// No row -> is_recommended : true
-		_, err = db.Exec(`Insert into thread_recommend (thread_id, email, is_recommended) values(?,?,true)`, reqBody.Thread_id, reqBody.Email)
+		_, err = db.Exec(`Insert into thread_recommend (thread_id, id, is_recommended) values(?,?,true)`, reqBody.Thread_id, id)
 
 		if err := ErrChecker.Check(err); err != nil {
 			return err
@@ -284,7 +287,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 	}
 	// Is_recommended -> is_recommended : false
 	if is_recommended == true {
-		_, err = db.Exec(`Update thread_recommend set is_recommended = false where thread_id = ? and email = ?`, reqBody.Thread_id, reqBody.Email)
+		_, err = db.Exec(`Update thread_recommend set is_recommended = false where thread_id = ? and id = ?`, reqBody.Thread_id, id)
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
@@ -292,7 +295,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 		return nil
 	}
 	// Not is_recommneded -> is_recommend : true
-	_, err = db.Exec(`Update thread_recommend set is_recommended = true where thread_id = ? and email = ?`, reqBody.Thread_id, reqBody.Email)
+	_, err = db.Exec(`Update thread_recommend set is_recommended = true where thread_id = ? and id = ?`, reqBody.Thread_id, id)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
@@ -311,7 +314,7 @@ func DeleteThread(c *gin.Context) error {
 	WHERE
 		thread_id = ` + thread_id + `
 		and 
-		email = "` + user + `"
+		id = "` + user + `"
 	`
 	db := storage.DB()
 	var length int
@@ -325,7 +328,7 @@ func DeleteThread(c *gin.Context) error {
 	WHERE 
 		thread_id = ` + thread_id + `
 		and 
-		email = "` + user + `"
+		id = "` + user + `"
 	`
 	_, err := db.Exec(query)
 	if err := ErrChecker.Check(err); err != nil {

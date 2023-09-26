@@ -161,7 +161,7 @@ func getChannels(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Channel
 // @Param        channel_id    query     string  true  "Channel id"  Format(number)
-// @Router /channel [get]
+// @Router /channels [get]
 func getChannel(c *gin.Context) {
 	channel, err := GetChannel(c)
 	if err != nil {
@@ -242,8 +242,8 @@ func oAuthLogin(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} OauthInfo
 // @Router /user [get]
-func getUser(c *gin.Context) {
-	user, err := GetUser(c)
+func getMyInfo(c *gin.Context) {
+	user, err := GetMyInfo(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
