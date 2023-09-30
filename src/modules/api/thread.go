@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	. "cinephile/modules/dto"
 	ErrChecker "cinephile/modules/errors"
@@ -380,13 +381,15 @@ LEFT JOIN
 	user AS u ON u.id = t.id
 WHERE 
 	t.is_exposed = true
-	and t.channel_id = ` + channel + `
+	and 
+	t.channel_id = ` + channel + `
 	and
 	t.thread_id < ` + cursor + `
 ORDER BY
 	t.thread_id DESC
 LIMIT 11;
 	`
+	fmt.Println(query)
 	rows, err := db.Query(query)
 
 	if err := ErrChecker.Check(err); err != nil {
@@ -413,7 +416,9 @@ LIMIT 11;
 		} else {
 			thread.Title = title.String
 		}
+
 		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
+		fmt.Println(thread.Thread_id, thread.Channel.Channel_id)
 		Threads = append(Threads, thread)
 	}
 	last_cursor := -1
