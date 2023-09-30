@@ -4,6 +4,7 @@ import (
 	. "cinephile/modules/api"
 	. "cinephile/modules/dto"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -261,6 +262,9 @@ func oAuthLogin(c *gin.Context) {
 	// none -> insert
 	if !isExist {
 		_ = RegistUser(OauthInfo, platform)
+	}
+	if strings.Contains(referer_domain, "localhost") {
+		c.Redirect(http.StatusFound, "http://localhost:3000/api/auth/kakao")
 	}
 	c.Redirect(http.StatusFound, referer_domain)
 
