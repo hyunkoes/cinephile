@@ -20,11 +20,17 @@ import (
 // @Router /list/threads [get]
 func getThreads(c *gin.Context) {
 	_, valid := c.GetQuery(`parent_id`)
+
 	var threads []Thread
 	var err error
 	var cursor int
 	if !valid {
-		threads, err, cursor = GetThreadsWithRecommend(c)
+		_, v := c.GetQuery(`channel`)
+		if !v {
+			threads, err, cursor = GetThreadsWithRecommend(c)
+		} else {
+			threads, err, cursor = GetThreadsByChannel(c)
+		}
 	} else {
 		threads, err, cursor = GetChildThreadsWithRecommend(c)
 	}

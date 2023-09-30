@@ -336,3 +336,90 @@ func DeleteThread(c *gin.Context) error {
 	}
 	return nil
 }
+
+func GetThreadsByChannel(c *gin.Context) ([]Thread, error, int) {
+	db := storage.DB()
+	cursor, valid := c.GetQuery("cursor")
+	channel, _ := c.GetQuery(`channel`)
+	if !valid {
+		cursor = "2147483647"
+	}
+	var length int
+	query := `select count(*) from thread where channel_id = ` + channel + ` and  thread_id < ` + cursor
+	_ = db.QueryRow(query).Scan(&length)
+	if length == 0 {
+		return []Thread{}, nil, 0
+	}
+	query = `
+SELECT
+	t.thread_id,
+	t.channel_id,
+	m.original_title,
+	m.kr_title,
+	m.movie_id,
+	m.poster_path,
+	u.id,
+	u.user_name,
+	u.photo,
+	t.parent,
+	t.title,
+	t.content,
+	t.like_count,
+	tr.is_recommended,
+	t.created_at,
+	t.updated_at
+FROM
+	thread AS t
+LEFT JOIN
+	thread_recommend AS tr ON t.id = tr.id and t.thread_id = tr.thread_id
+LEFT JOIN
+	channel AS c ON t.channel_id = c.channel_id
+LEFT JOIN
+	movie AS m ON c.movie_id = m.movie_id
+LEFT JOIN
+	user AS u ON u.id = t.id
+WHERE 
+	t.is_exposed = true
+	and t.channel_id = ` + channel + `
+	and
+	t.thread_id < ` + cursor + `
+ORDER BY
+	t.thread_id DESC
+LIMIT 11;
+	`
+	rows, err := db.Query(query)
+
+	if err := ErrChecker.Check(err); err != nil {
+		return []Thread{}, err, 0
+	}
+	defer rows.Close()
+	Threads := make([]Thread, 0)
+	var thread Thread
+	var is_recommended sql.NullBool
+	var title sql.NullString
+	for rows.Next() {
+		err = rows.Scan(&thread.Thread_id, &thread.Channel.Channel_id, &thread.Channel.Movie.Original_title,
+			&thread.Channel.Movie.Kr_title, &thread.Channel.Movie.Movie_id, &thread.Channel.Movie.Poster_path, &thread.Author.Id, &thread.Author.Name, &thread.Author.Image, &thread.Parent_id, &title, &thread.Content, &thread.Like, &is_recommended, &thread.Created_at, &thread.Updated_at)
+		if err := ErrChecker.Check(err); err != nil {
+			return []Thread{}, err, 0
+		}
+		if !is_recommended.Valid {
+			thread.Is_recommended = false
+		} else {
+			thread.Is_recommended = is_recommended.Bool
+		}
+		if !title.Valid {
+			thread.Title = ""
+		} else {
+			thread.Title = title.String
+		}
+		thread.Channel.Movie.Poster_path = TmdbPosterAPI(thread.Channel.Movie.Poster_path)
+		Threads = append(Threads, thread)
+	}
+	last_cursor := -1
+	if len(Threads) > 10 {
+		Threads = Threads[:len(Threads)-1]
+		last_cursor = Threads[len(Threads)-1].Thread_id
+	}
+	return Threads, nil, last_cursor
+}
