@@ -241,12 +241,12 @@ func oAuthLogin(c *gin.Context) {
 	http.SetCookie(c.Writer, testCookie)
 
 	// Lax 모드 cinephile.site & .app.localhost
-	c.SetCookie("JBM COOKIE 1 - .cinephile.site", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
-	c.SetCookie("JBM COOKIE 2 - .app.localhost", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", false, true)
+	c.SetCookie("JBM1", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
+	c.SetCookie("JBM2", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", false, true)
 	c.SetSameSite(http.SameSiteNoneMode)
 	// None 모드 cinephile.site & .app.localhost
-	c.SetCookie("JBM COOKIE 3 - .cinephile.site", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
-	c.SetCookie("JBM COOKIE 4 - .app.localhost", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", true, true)
+	c.SetCookie("JBM3", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
+	c.SetCookie("JBM4", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", true, true)
 
 	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, true, true)
