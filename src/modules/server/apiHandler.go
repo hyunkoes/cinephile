@@ -228,7 +228,15 @@ func oAuthLogin(c *gin.Context) {
 	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, false, true)
 	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, false, true)
-
+	testCookie := &http.Cookie{
+		Name:     "TEST!",
+		Value:    "TEST!",
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Domain:   cookie_domain,
+		Path:     "/",
+	}
+	http.SetCookie(c.Writer, testCookie)
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, true, true)
