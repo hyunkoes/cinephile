@@ -251,6 +251,7 @@ func oAuthLogin(c *gin.Context) {
 	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, true, true)
 	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, true, true)
+	c.Request.AddCookie(testCookie)
 
 	// OAuth info를 불러옴
 	OauthInfo, err := GetOAuthInfo(tokens.AccessToken, platform)
