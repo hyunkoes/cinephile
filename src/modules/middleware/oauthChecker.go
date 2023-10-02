@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"cinephile/modules/middleware/token"
+	"cinephile/modules/oauth"
 	"net/http"
 	"time"
 
@@ -10,33 +11,38 @@ import (
 
 func TokenCheck(c *gin.Context) {
 	if token.AccessTokenIsValid(c) {
+		c.Header(`user`, `1`)
 		c.Next()
+		return
 	}
 	if token.RefreshTokenIsValid(c) {
+		// Get Refresh token
 		refresh_token, err := c.Cookie(`refresh_token`)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
-		tokens, err := token.RefreshAT(refresh_token)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			c.Abort()
-			return
-		}
+		// Get platform
 		platform, err := c.Cookie(`platform`)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
-		// kakao는 refresh token의 유효기간이 1달보다 짧으면 refresh token이 재발급됨
+		// Refresh tokens by platform oauth server
+		tokens, err := token.RefreshAT(refresh_token, platform)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		// If refresh token is refreshed, set again
 		if tokens.RefreshToken != "" {
 			c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 			c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", false, true)
 		}
-		// Next 핸들러에서 쿠키를 바로 사용하기 위함
+		// Set cookie for next handler ( request )
 		c.Request.AddCookie(&http.Cookie{
 			Name:     "access_token",
 			Value:    tokens.AccessToken,
@@ -47,8 +53,10 @@ func TokenCheck(c *gin.Context) {
 			Secure:   false,
 			HttpOnly: true,
 		})
-		// Response에 쿠키를 넘겨주어 Client에서 등록할 수 있도록 함
+		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		user_id, err := oauth.GetID(tokens.AccessToken, platform)
+		c.Header(`user`, user_id)
 		c.Next()
 		return
 	}

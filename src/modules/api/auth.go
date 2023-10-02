@@ -74,34 +74,21 @@ func GetKakaoInfo(c *gin.Context) (OauthInfo, error) {
 	}
 	return oauth.GetKakaoTokenInfo(token)
 }
-func getInfo(token string, platform string) (int, error) {
+func getInfo(token string, platform string) (string, error) {
 	if platform == "kakao" {
-		return getKakaoTokenID(token)
+		return oauth.GetKakaoTokenID(token)
 	}
 	if platform == "google" {
-		return getGoogleTokenID(token)
+		return oauth.GetGoogleTokenID(token)
 	}
-	return 0, errors.New("Invalid platform")
-}
-func getKakaoTokenID(token string) (int, error) {
-	return oauth.GetKakaoTokenID(token)
-}
-func getGoogleTokenID(token string) (int, error) {
-	return oauth.GetGoogleTokenID(token)
-}
-func getKakaoInfo(token string) (OauthInfo, error) {
-	return oauth.GetKakaoTokenInfo(token)
-}
-func getGoogleInfo(token string) (OauthInfo, error) {
-	return oauth.GetGoogleTokenInfo(token)
-	// return OauthInfo{}, nil
+	return "", errors.New("Invalid platform")
 }
 func GetOAuthInfo(token string, platform string) (OauthInfo, error) {
 	if platform == "kakao" {
-		return getKakaoInfo(token)
+		return oauth.GetKakaoTokenInfo(token)
 	}
 	if platform == "google" {
-		return getGoogleInfo(token)
+		return oauth.GetGoogleTokenInfo(token)
 	}
 	return OauthInfo{}, errors.New("Invalid platform")
 }

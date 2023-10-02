@@ -5,7 +5,6 @@ import (
 	"cinephile/modules/logging"
 	"cinephile/modules/storage"
 	"database/sql"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,14 +28,14 @@ func GetMyInfo(c *gin.Context) (User, error) {
 	if err != nil {
 		return User{}, err
 	}
+
 	id, err := getInfo(token, platform)
 	if err != nil {
 		return User{}, err
 	}
-	wrapId := strconv.Itoa(id)
 	db := storage.DB()
 	query := `
-		select * from user where id = "` + wrapId + `" and platform = "` + platform + `"`
+		select * from user where id = "` + id + `" and platform = "` + platform + `"`
 	row := db.QueryRow(query)
 	var user User
 	var password sql.NullString
