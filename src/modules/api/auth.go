@@ -93,7 +93,8 @@ func getKakaoInfo(token string) (OauthInfo, error) {
 	return oauth.GetKakaoTokenInfo(token)
 }
 func getGoogleInfo(token string) (OauthInfo, error) {
-	return OauthInfo{}, nil
+	return oauth.GetGoogleTokenInfo(token)
+	// return OauthInfo{}, nil
 }
 func GetOAuthInfo(token string, platform string) (OauthInfo, error) {
 	if platform == "kakao" {
@@ -109,15 +110,15 @@ func OAuthLogin(c *gin.Context) (Token, error) {
 	if !valid {
 		return Token{}, errors.New("Invalid platform parameter")
 	}
-	if platform == "kakao" {
-		return kakaoLogin(c)
-	}
-	return Token{}, nil
-}
-func kakaoLogin(c *gin.Context) (Token, error) {
 	code, valid := c.GetQuery(`code`)
 	if !valid {
 		return Token{}, errors.New("No auth code")
 	}
-	return oauth.KakaoLogin(code)
+	if platform == "kakao" {
+		return oauth.KakaoLogin(code)
+	}
+	if platform == "google" {
+		return oauth.GoogleLogin(code)
+	}
+	return Token{}, nil
 }
