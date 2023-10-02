@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 
 	"golang.org/x/oauth2/google"
 
@@ -67,7 +68,9 @@ func GetGoogleTokenInfo(token string) (OauthInfo, error) {
 }
 
 func GetGoogleTokenID(token string) (int, error) {
-	return -1, nil
+	info, _ := GetGoogleTokenInfo(token)
+	id, _ := strconv.Atoi(info.ID)
+	return id, nil
 }
 
 func GoogleRefreshATwithRT(token string) (Token, error) {
