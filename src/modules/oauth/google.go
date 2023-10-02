@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"golang.org/x/oauth2/google"
 
@@ -57,11 +56,11 @@ func GetGoogleTokenInfo(token string) (OauthInfo, error) {
 	var payload interface{}                      //The interface where we will save the converted JSON data.
 	_ = json.Unmarshal(body, &payload)           // Convert JSON data into interface{} type
 	jsonData := payload.(map[string]interface{}) // To use the converted data we will need to convert it into a map[string]interface
-	googleID := jsonData["id"].(float64)         // id는 숫자로 반환되기 때문에 float64로 형변환
+	googleID := jsonData["id"].(string)          // id는 숫자로 반환되기 때문에 float64로 형변환
 	name := jsonData["name"].(string)
 	photo := jsonData["picture"].(string)
 
-	googleInfo.ID = strconv.Itoa(int(googleID))
+	googleInfo.ID = googleID
 	googleInfo.Name = name
 	googleInfo.Image = photo
 	return googleInfo, nil
@@ -83,7 +82,6 @@ func GoogleLogin(code string) (Token, error) {
 	data.Set("code", code) // 사용자 인증 후 받은 인증 코드
 	// POST 요청 보내기
 	resp, err := http.PostForm(GoogleOAuthConf.Endpoint.TokenURL, data)
-	fmt.Println("POST 요청 보냄!")
 	if err != nil {
 		fmt.Printf("Google token API err : %v\n", err)
 	}
@@ -91,8 +89,6 @@ func GoogleLogin(code string) (Token, error) {
 
 	// 응답 바디 읽기
 	body, err := ioutil.ReadAll(resp.Body)
-	fmt.Println("POST 요청 받음!")
-	fmt.Println(string(body))
 	if err != nil {
 		fmt.Printf("Google token response body err : %v\n", err)
 	}
