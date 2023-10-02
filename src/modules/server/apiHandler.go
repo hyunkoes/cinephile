@@ -3,7 +3,6 @@ package server
 import (
 	. "cinephile/modules/api"
 	. "cinephile/modules/dto"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -217,9 +216,7 @@ func getHotMovies(c *gin.Context) {
 // @Success 200 {object} Token
 // @Router /oauth/callback [get]
 func oAuthLogin(c *gin.Context) {
-	fmt.Println("OAuthLogin 시작")
 	tokens, err := OAuthLogin(c)
-	fmt.Println("OAuthLogin 끝")
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	}
