@@ -310,9 +310,10 @@ func getUsers(c *gin.Context) {
 //		}
 //	}
 func oAuthLogout(c *gin.Context) {
+	cookie_domain := ".cinephile.site"
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("access_token", "", -1, "/", "", true, true)
-	c.SetCookie("refresh_token", "", -1, "/", "", true, true)
-	c.SetCookie("platform", "", -1, "/", "", true, true)
+	c.SetCookie("access_token", "", -1, "/", cookie_domain, true, true)
+	c.SetCookie("refresh_token", "", -1, "/", cookie_domain, true, true)
+	c.SetCookie("platform", "", -1, "/", cookie_domain, true, true)
 	c.JSON(200, gin.H{"error": nil, "msg": "쿠키 삭제했어유"})
 }
