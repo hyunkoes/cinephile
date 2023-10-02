@@ -301,11 +301,17 @@ func getUsers(c *gin.Context) {
 	}
 }
 
-// func getUser(c *gin.Context) {
-// 	user, err := GetUser(c)
-// 	if err != nil {
-// 		c.JSON(400, gin.H{"error": err.Error()})
-// 	} else {
-// 		c.JSON(200, gin.H{"error": nil, "user": user})
-// 	}
-// }
+//	func getUser(c *gin.Context) {
+//		user, err := GetUser(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil, "user": user})
+//		}
+//	}
+func oAuthLogout(c *gin.Context) {
+	c.SetCookie("access_token", "", -1, "/", "", true, true)
+	c.SetCookie("refresh_token", "", -1, "/", "", true, true)
+	c.SetCookie("platform", "", -1, "/", "", true, true)
+	c.JSON(200, gin.H{"error": nil, "msg": "쿠키 삭제했어유"})
+}

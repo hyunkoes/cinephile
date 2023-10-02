@@ -90,6 +90,8 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	// kakao, google 둘 다 여기로 callback, platform -> parameter
 	api.GET("/oauth/callback", oAuthLogin)
 
+	api.GET("/oauth/logout", oAuthLogout)
+
 }
 func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
