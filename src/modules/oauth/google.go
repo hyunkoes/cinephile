@@ -37,7 +37,7 @@ func init() {
 func GetGoogleTokenInfo(token string) (OauthInfo, error) {
 	var googleInfo OauthInfo
 	apiURL := GOOGLE_GET_INFO_URL
-	req, err := http.NewRequest("POST", apiURL, nil)
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return OauthInfo{}, err
 	}
@@ -58,9 +58,8 @@ func GetGoogleTokenInfo(token string) (OauthInfo, error) {
 	_ = json.Unmarshal(body, &payload)           // Convert JSON data into interface{} type
 	jsonData := payload.(map[string]interface{}) // To use the converted data we will need to convert it into a map[string]interface
 	googleID := jsonData["id"].(float64)         // id는 숫자로 반환되기 때문에 float64로 형변환
-	profile := jsonData["kakao_account"].(map[string]interface{})["profile"].(map[string]interface{})
-	name := profile["nickname"].(string)
-	photo := profile["thumbnail_image_url"].(string)
+	name := jsonData["name"].(string)
+	photo := jsonData["picture"].(string)
 
 	googleInfo.ID = strconv.Itoa(int(googleID))
 	googleInfo.Name = name
