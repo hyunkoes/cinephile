@@ -27,7 +27,11 @@ func init() {
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		Endpoint:     google.Endpoint,
-		RedirectURL:  os.Getenv("GOOGLE_CALLBACK_URL"),
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		RedirectURL: os.Getenv("GOOGLE_CALLBACK_URL"),
 	}
 }
 func GetGoogleTokenInfo(token string) (OauthInfo, error) {
@@ -79,6 +83,7 @@ func GoogleLogin(code string) (Token, error) {
 	data.Set("code", code) // 사용자 인증 후 받은 인증 코드
 	// POST 요청 보내기
 	resp, err := http.PostForm(GoogleOAuthConf.Endpoint.TokenURL, data)
+	fmt.Println("POST 요청 보냄!")
 	if err != nil {
 		fmt.Printf("Google token API err : %v\n", err)
 	}
@@ -86,6 +91,8 @@ func GoogleLogin(code string) (Token, error) {
 
 	// 응답 바디 읽기
 	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println("POST 요청 받음!")
+	fmt.Println(string(body))
 	if err != nil {
 		fmt.Printf("Google token response body err : %v\n", err)
 	}
