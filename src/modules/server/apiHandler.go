@@ -310,6 +310,7 @@ func getUsers(c *gin.Context) {
 //		}
 //	}
 func oAuthLogout(c *gin.Context) {
+	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("access_token", "", -1, "/", "", true, true)
 	c.SetCookie("refresh_token", "", -1, "/", "", true, true)
 	c.SetCookie("platform", "", -1, "/", "", true, true)
