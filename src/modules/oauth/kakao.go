@@ -29,34 +29,34 @@ func init() {
 		RedirectURL:  os.Getenv("KAKAO_CALLBACK_URL"),
 	}
 }
-func GetKakaoTokenID(token string) (int, error) {
+func GetKakaoTokenID(token string) (string, error) {
 	apiURL := KAKAO_GET_TOKEN_ID_URL
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		return -1, err
+		return "", err
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return -1, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return -1, err
+		return "", err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return -1, err
+		return "", err
 	}
 	var kakaoTokenInfo KakaoTokenInfo
 	if err := json.Unmarshal(body, &kakaoTokenInfo); err != nil {
-		return -1, err
+		return "", err
 	}
-	return kakaoTokenInfo.Id, nil
+	return strconv.Itoa(kakaoTokenInfo.Id), nil
 }
 func GetKakaoTokenInfo(token string) (OauthInfo, error) {
 	var kakaoInfo OauthInfo

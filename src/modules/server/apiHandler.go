@@ -4,6 +4,7 @@ import (
 	. "cinephile/modules/api"
 	. "cinephile/modules/dto"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,11 +21,17 @@ import (
 // @Router /list/threads [get]
 func getThreads(c *gin.Context) {
 	_, valid := c.GetQuery(`parent_id`)
+
 	var threads []Thread
 	var err error
 	var cursor int
 	if !valid {
-		threads, err, cursor = GetThreadsWithRecommend(c)
+		_, v := c.GetQuery(`channel`)
+		if !v {
+			threads, err, cursor = GetThreadsWithRecommend(c)
+		} else {
+			threads, err, cursor = GetThreadsByChannel(c)
+		}
 	} else {
 		threads, err, cursor = GetChildThreadsWithRecommend(c)
 	}
@@ -161,7 +168,7 @@ func getChannels(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Channel
 // @Param        channel_id    query     string  true  "Channel id"  Format(number)
-// @Router /channel [get]
+// @Router /channels [get]
 func getChannel(c *gin.Context) {
 	channel, err := GetChannel(c)
 	if err != nil {
@@ -217,10 +224,35 @@ func oAuthLogin(c *gin.Context) {
 	if !valid {
 		referer_domain = "cinephile.site"
 	}
+	cookie_domain := ".cinephile.site"
 	platform, _ := c.GetQuery(`platform`)
-	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
-	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
-	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", false, true)
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, false, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, false, true)
+
+	testCookie := &http.Cookie{
+		Name:     "TEST!",
+		Value:    "TEST!",
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Domain:   cookie_domain,
+		Path:     "/",
+	}
+	http.SetCookie(c.Writer, testCookie)
+
+	// Lax 모드 cinephile.site & .app.localhost
+	c.SetCookie("JBM1", tokens.AccessToken, tokens.Expire, "/", cookie_domain, false, true)
+	c.SetCookie("JBM2", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", false, true)
+	c.SetSameSite(http.SameSiteNoneMode)
+	// None 모드 cinephile.site & .app.localhost
+	c.SetCookie("JBM3", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
+	c.SetCookie("JBM4", tokens.AccessToken, tokens.Expire, "/", ".app.localhost", true, true)
+
+	c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", cookie_domain, true, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", cookie_domain, true, true)
+	c.SetCookie("platform", platform, tokens.RefreshExpire, "/", cookie_domain, true, true)
+	c.Request.AddCookie(testCookie)
+
 	// OAuth info를 불러옴
 	OauthInfo, err := GetOAuthInfo(tokens.AccessToken, platform)
 	if err != nil {
@@ -232,6 +264,9 @@ func oAuthLogin(c *gin.Context) {
 	if !isExist {
 		_ = RegistUser(OauthInfo, platform)
 	}
+	if strings.Contains(referer_domain, "localhost") {
+		c.Redirect(http.StatusFound, "http://localhost:3000/api/auth/kakao")
+	}
 	c.Redirect(http.StatusFound, referer_domain)
 
 }
@@ -242,8 +277,8 @@ func oAuthLogin(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} OauthInfo
 // @Router /user [get]
-func getUser(c *gin.Context) {
-	user, err := GetUser(c)
+func getMyInfo(c *gin.Context) {
+	user, err := GetMyInfo(c)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 	} else {
@@ -266,11 +301,19 @@ func getUsers(c *gin.Context) {
 	}
 }
 
-// func getUser(c *gin.Context) {
-// 	user, err := GetUser(c)
-// 	if err != nil {
-// 		c.JSON(400, gin.H{"error": err.Error()})
-// 	} else {
-// 		c.JSON(200, gin.H{"error": nil, "user": user})
-// 	}
-// }
+//	func getUser(c *gin.Context) {
+//		user, err := GetUser(c)
+//		if err != nil {
+//			c.JSON(400, gin.H{"error": err.Error()})
+//		} else {
+//			c.JSON(200, gin.H{"error": nil, "user": user})
+//		}
+//	}
+func oAuthLogout(c *gin.Context) {
+	cookie_domain := ".cinephile.site"
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie("access_token", "", -1, "/", cookie_domain, true, true)
+	c.SetCookie("refresh_token", "", -1, "/", cookie_domain, true, true)
+	c.SetCookie("platform", "", -1, "/", cookie_domain, true, true)
+	c.JSON(200, gin.H{"error": nil, "msg": "쿠키 삭제했어유"})
+}

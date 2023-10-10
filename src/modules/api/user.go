@@ -5,8 +5,6 @@ import (
 	"cinephile/modules/logging"
 	"cinephile/modules/storage"
 	"database/sql"
-	"errors"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,23 +19,23 @@ func RegistUser(OauthInfo OauthInfo, platform string) error {
 	return nil
 }
 
-func GetUser(c *gin.Context) (User, error) {
+func GetMyInfo(c *gin.Context) (User, error) {
 	token, err := c.Cookie(`access_token`)
 	if err != nil {
 		return User{}, err
 	}
-	platform, valid := c.GetQuery(`platform`)
-	if !valid {
-		return User{}, errors.New("Input platform(kakao, google ..) in parameter !")
+	platform, err := c.Cookie(`platform`)
+	if err != nil {
+		return User{}, err
 	}
+
 	id, err := getInfo(token, platform)
 	if err != nil {
 		return User{}, err
 	}
-	wrapId := strconv.Itoa(id)
 	db := storage.DB()
 	query := `
-		select * from user where id = "` + wrapId + `" and platform = "` + platform + `"`
+		select * from user where id = "` + id + `" and platform = "` + platform + `"`
 	row := db.QueryRow(query)
 	var user User
 	var password sql.NullString

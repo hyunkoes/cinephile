@@ -2,7 +2,7 @@ version: '3.8'
 services:
   cinephile_server: # golang web
     build: server/
-    container_name: cinephile_server_dev
+    container_name: cinephile_server
     ports: 
       - "4000:4000"
     tty: true
@@ -10,12 +10,11 @@ services:
       - ../.env.dev
     volumes:
       - ../src:/cinephile/src
-    command: go run main.go 
     # restart: always
 
   nginx: # loadbalancer
     image: nginx:latest
-    container_name: nginx_dev
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
@@ -26,7 +25,7 @@ services:
   cinephile_mysql:
     build:
       context: mysql/
-    container_name: cinephile_mysql_dev
+    container_name: cinephile_mysql
     env_file:
       - ../.env.dev
     volumes:

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	docs "cinephile/docs"
+	. "cinephile/modules/middleware"
 	. "cinephile/modules/storage"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -19,24 +20,25 @@ const port = ":4000"
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
 	docs.SwaggerInfo.BasePath = "/api"
-	api := r.Group("/api")
-
+	publicAPI := r.Group("/api")
+	authAPI := r.Group("/api")
+	authAPI.Use(TokenCheck)
 	os.Setenv("TZ", "Asia/Seoul")
 	if GetConn().Ping() != nil {
 		panic(fmt.Errorf("mysql is off status"))
 	}
 
-	RegistApiHandler(api)
+	RegistApiHandler(publicAPI, authAPI)
 	r.Run(port)
 }
 
-func RegistApiHandler(api *gin.RouterGroup) {
-	RegistChannelApiHandler(api)
-	RegistMovieApiHandler(api)
-	RegistUserApiHandler(api)
-	RegistAccountApiHandler(api)
-	RegistThreadApiHandler(api)
-	RegistSwaggerApiHandler(api)
+func RegistApiHandler(publicAPI *gin.RouterGroup, authAPI *gin.RouterGroup) {
+	RegistChannelApiHandler(publicAPI)
+	RegistMovieApiHandler(publicAPI)
+	RegistUserApiHandler(authAPI)
+	RegistAccountApiHandler(publicAPI)
+	RegistThreadApiHandler(publicAPI)
+	RegistSwaggerApiHandler(publicAPI)
 }
 func RegistSwaggerApiHandler(api *gin.RouterGroup) {
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -88,6 +90,8 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	// kakao, google 둘 다 여기로 callback, platform -> parameter
 	api.GET("/oauth/callback", oAuthLogin)
 
+	api.GET("/oauth/logout", oAuthLogout)
+
 }
 func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
@@ -97,7 +101,7 @@ func RegistUserApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.GET("/users", getUser)
+	api.GET("/users/me", getMyInfo)
 	// api.PUT("/user", updateUser)
 	/*  Reply			200 -> thread list
 	400 -> No more thread
