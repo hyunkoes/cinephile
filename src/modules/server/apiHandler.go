@@ -315,5 +315,5 @@ func oAuthLogout(c *gin.Context) {
 	c.SetCookie("access_token", "", -1, "/", cookie_domain, true, true)
 	c.SetCookie("refresh_token", "", -1, "/", cookie_domain, true, true)
 	c.SetCookie("platform", "", -1, "/", cookie_domain, true, true)
-	c.JSON(200, gin.H{"error": nil, "msg": "쿠키 삭제했어유"})
+	c.JSON(200, gin.H{"error": nil})
 }
