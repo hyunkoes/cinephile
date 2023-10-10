@@ -40,6 +40,7 @@ func GetChannel(c *gin.Context) (Channel, error) {
 	_ = err
 	channel.Movie.Poster_path = TmdbPosterAPI(channel.Movie.Poster_path)
 	channel.Movie.Trailers = GetTrailer(channel.Movie.Movie_id)
+	channel.Movie.Stillcuts = GetStillCut(channel.Movie.Movie_id)
 	return channel, nil
 }
 

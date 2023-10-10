@@ -187,6 +187,7 @@ func GetMovie(c *gin.Context) (Movie, error) {
 	mov.Genres = genres
 	mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
 	mov.Trailers = GetTrailer(mov.Movie_id)
+	mov.Stillcuts = GetStillCut(mov.Movie_id)
 	return mov, nil
 }
 
