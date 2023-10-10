@@ -7,7 +7,6 @@ import (
 	. "cinephile/modules/tmdb"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -127,7 +126,6 @@ func GetMovies(c *gin.Context) ([]Movie, error) {
 	defer rows.Close()
 	var mov Movie
 	var movies []Movie
-	fmt.Println("CALL!")
 	for rows.Next() {
 		err := rows.Scan(&mov.Movie_id, &mov.Is_adult, &mov.Original_title,
 			&mov.Kr_title, &mov.Poster_path, &mov.Release_date, &mov.Overview)
@@ -188,6 +186,7 @@ func GetMovie(c *gin.Context) (Movie, error) {
 	}
 	mov.Genres = genres
 	mov.Poster_path = TmdbPosterAPI(mov.Poster_path)
+	mov.Trailers = GetTrailer(mov.Movie_id)
 	return mov, nil
 }
 
