@@ -11,6 +11,13 @@ type Movie struct {
 	Release_date   time.Time `json:"releaseDate"`
 	Overview       string    `json:"overview"`
 	Genres         []Genre   `json:"genres"`
+	Trailers       []Trailer `json:"trailers"`
+}
+type Trailer struct {
+	Site     string `json:"site"`
+	Key      string `json:"key"`
+	Official bool   `json:"official"`
+	Url      string `json:"url"`
 }
 type MovieSearch struct {
 	Movie_id       int       `json:"movieId"`
