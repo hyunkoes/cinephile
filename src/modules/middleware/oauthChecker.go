@@ -11,7 +11,15 @@ import (
 
 func TokenCheck(c *gin.Context) {
 	if token.AccessTokenIsValid(c) {
-		c.Header(`user`, `1`)
+		token, _ := c.Cookie(`access_token`)
+		platform, err := c.Cookie(`platform`)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		id, err := oauth.GetID(token, platform)
+		c.Header(`user`, id)
 		c.Next()
 		return
 	}
