@@ -12,6 +12,7 @@ type Movie struct {
 	Overview       string    `json:"overview"`
 	Genres         []Genre   `json:"genres"`
 	Trailers       []Trailer `json:"trailers"`
+	Stillcuts      []string  `json:"stillcuts"`
 }
 type Trailer struct {
 	Site     string `json:"site"`
