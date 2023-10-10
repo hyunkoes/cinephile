@@ -35,15 +35,15 @@ func Serve(mode int) { // local : 4000 호스팅 시작
 func RegistApiHandler(publicAPI *gin.RouterGroup, authAPI *gin.RouterGroup) {
 	RegistChannelApiHandler(publicAPI)
 	RegistMovieApiHandler(publicAPI)
-	RegistUserApiHandler(authAPI)
-	RegistAccountApiHandler(publicAPI)
-	RegistThreadApiHandler(publicAPI)
+	RegistUserApiHandler(publicAPI, authAPI)
+	RegistAccountApiHandler(publicAPI, authAPI)
+	RegistThreadApiHandler(publicAPI, authAPI)
 	RegistSwaggerApiHandler(publicAPI)
 }
 func RegistSwaggerApiHandler(api *gin.RouterGroup) {
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
-func RegistThreadApiHandler(api *gin.RouterGroup) {
+func RegistThreadApiHandler(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
@@ -55,22 +55,22 @@ func RegistThreadApiHandler(api *gin.RouterGroup) {
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.POST("/threads", registThread)
+	auth.POST("/threads", registThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.POST("/threads/likes", changeRecommendThread)
+	auth.POST("/threads/likes", changeRecommendThread)
 	/*  Reply			200 -> threads
 	400 -> No more thread
 	*/
-	api.DELETE("/threads", deleteThread)
+	auth.DELETE("/threads", deleteThread)
 	/*  Reply			200 -> like thread
 	else -> unknown error
 	*/
 	// api.("/thread", likeThread)
 
 }
-func RegistAccountApiHandler(api *gin.RouterGroup) {
+func RegistAccountApiHandler(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
@@ -90,10 +90,10 @@ func RegistAccountApiHandler(api *gin.RouterGroup) {
 	// kakao, google 둘 다 여기로 callback, platform -> parameter
 	api.GET("/oauth/callback", oAuthLogin)
 
-	api.GET("/oauth/logout", oAuthLogout)
+	auth.GET("/oauth/logout", oAuthLogout)
 
 }
-func RegistUserApiHandler(api *gin.RouterGroup) {
+func RegistUserApiHandler(api *gin.RouterGroup, auth *gin.RouterGroup) {
 	/*  Reply			200 -> thread list
 	400 -> No more thread
 	*/
