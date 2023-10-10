@@ -19,7 +19,7 @@ func TokenCheck(c *gin.Context) {
 			return
 		}
 		id, err := oauth.GetID(token, platform)
-		c.Header(`user`, id)
+		c.Set(`user`, id)
 		c.Next()
 		return
 	}
@@ -64,7 +64,7 @@ func TokenCheck(c *gin.Context) {
 		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
-		c.Header(`user`, user_id)
+		c.Set(`user`, user_id)
 		c.Next()
 		return
 	}

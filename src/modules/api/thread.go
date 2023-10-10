@@ -240,7 +240,7 @@ LIMIT 11;
 
 func RegistThread(c *gin.Context) error {
 	var reqBody ThreadRegistForm
-	user := c.GetHeader("user")
+	user, _ := c.Get("user")
 	err := c.ShouldBind(&reqBody)
 
 	if ErrChecker.Check(err) != nil {
