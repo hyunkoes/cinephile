@@ -3,6 +3,7 @@ package middleware
 import (
 	"cinephile/modules/middleware/token"
 	"cinephile/modules/oauth"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -38,6 +39,7 @@ func TokenCheck(c *gin.Context) {
 			c.Abort()
 			return
 		}
+		fmt.Println(refresh_token, platform, "으로 액세스 토큰 재발급 시작")
 		// Refresh tokens by platform oauth server
 		tokens, err := token.RefreshAT(refresh_token, platform)
 		if err != nil {
@@ -45,6 +47,7 @@ func TokenCheck(c *gin.Context) {
 			c.Abort()
 			return
 		}
+		fmt.Println("액세스 토큰 재발급 완료", tokens.AccessToken)
 		// If refresh token is refreshed, set again
 		if tokens.RefreshToken != "" {
 			c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
