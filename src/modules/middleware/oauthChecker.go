@@ -6,7 +6,6 @@ import (
 	"cinephile/modules/oauth"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,24 +50,14 @@ func TokenCheck(c *gin.Context) {
 		fmt.Println("액세스 토큰 재발급 완료", tokens.AccessToken)
 		// If refresh token is refreshed, set again
 		c.SetSameSite(http.SameSiteNoneMode)
-
 		if tokens.RefreshToken != "" {
 			c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", COOKIE_DOMAIN, true, true)
 			c.SetCookie("platform", platform, tokens.RefreshExpire, "/", COOKIE_DOMAIN, true, true)
 		}
-		// Set cookie for next handler ( request )
-		c.Request.AddCookie(&http.Cookie{
-			Name:     "access_token",
-			Value:    tokens.AccessToken,
-			Path:     "/",
-			Domain:   COOKIE_DOMAIN,
-			Expires:  time.Now().Add(time.Duration(tokens.Expire) * time.Second),
-			MaxAge:   0,
-			Secure:   true,
-			HttpOnly: true,
-		})
+		fmt.Println(tokens)
 		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", COOKIE_DOMAIN, true, true)
+
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
 		c.Set(`user`, user_id)
 		c.Next()
