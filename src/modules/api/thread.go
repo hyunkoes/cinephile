@@ -341,7 +341,7 @@ func DeleteThread(c *gin.Context) error {
 func GetThreadsByChannel(c *gin.Context) ([]Thread, error, int) {
 	db := storage.DB()
 	cursor, valid := c.GetQuery("cursor")
-	channel, _ := c.GetQuery(`channel`)
+	channel, _ := c.GetQuery(`channel_id`)
 	if !valid {
 		cursor = "2147483647"
 	}

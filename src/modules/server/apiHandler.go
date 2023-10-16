@@ -26,7 +26,7 @@ func getThreads(c *gin.Context) {
 	var err error
 	var cursor int
 	if !valid {
-		_, v := c.GetQuery(`channel`)
+		_, v := c.GetQuery(`channel_id`)
 		if !v {
 			threads, err, cursor = GetThreadsWithRecommend(c)
 		} else {
