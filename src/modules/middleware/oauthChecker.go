@@ -48,7 +48,6 @@ func TokenCheck(c *gin.Context) {
 			c.Abort()
 			return
 		}
-		fmt.Println("액세스 토큰 재발급 완료", tokens.AccessToken)
 		// If refresh token is refreshed, set again
 		c.SetSameSite(http.SameSiteNoneMode)
 
@@ -67,23 +66,10 @@ func TokenCheck(c *gin.Context) {
 			Secure:   true,
 			HttpOnly: true,
 		})
-		tk, err := c.Cookie(`access_token`)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println("tk : ", tk)
-		fmt.Println(tokens.Expire)
 		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", COOKIE_DOMAIN, true, true)
-
-		// c.SetSameSite(http.SameSiteNoneMode)
-		// c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", COOKIE_DOMAIN, true, true)
-		// c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", COOKIE_DOMAIN, true, true)
-		// c.SetCookie("platform", platform, tokens.RefreshExpire, "/", COOKIE_DOMAIN, true, true)
-
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
-		c.SetCookie("TEST1", "TEST", 10000, "/", "", true, true)
-		c.SetCookie("TEST2", "TEST", 10000, "/", "", false, true)
+		c.SetCookie("TEST1", "TEST", 10000, "/", COOKIE_DOMAIN, true, true)
 		c.Set(`user`, user_id)
 		c.Next()
 		return
