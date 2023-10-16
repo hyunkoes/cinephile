@@ -53,6 +53,7 @@ func TokenCheck(c *gin.Context) {
 			c.SetCookie("refresh_token", tokens.RefreshToken, tokens.RefreshExpire, "/", "", false, true)
 			c.SetCookie("platform", platform, tokens.RefreshExpire, "/", "", false, true)
 		}
+		c.SetSameSite(http.SameSiteNoneMode)
 		// Set cookie for next handler ( request )
 		c.Request.AddCookie(&http.Cookie{
 			Name:     "access_token",
@@ -65,7 +66,7 @@ func TokenCheck(c *gin.Context) {
 			HttpOnly: true,
 		})
 		// Set cookie for client ( response )
-		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", false, true)
+		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", "", true, true)
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
 		c.Set(`user`, user_id)
 		c.Next()
