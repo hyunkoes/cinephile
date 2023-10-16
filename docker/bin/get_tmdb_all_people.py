@@ -5,7 +5,6 @@ import os
 from dotenv import load_dotenv
 
 # 영화 정보를 담을 array
-movies = []
 # 인물 정보를 담을 dictionary
 characters = {}
 
@@ -106,27 +105,23 @@ def relationBetweenPersonMovie(people, movie_id):
     return sql
 
 def run_script():
-    global movies
     global characters
     for i in range(1, 500):
-        next_movies = get_movie_list(i)
-        if ( len(next_movies) == 0 ):
+        movies = get_movie_list(i)
+        if ( len(movies) == 0 ):
             break
-        movies = movies+next_movies
+        print(i, " page, movie info get")
+        for i in range(0, len(movies)):
+            cast, directors = getCreditInfo(movies[i]['id'])
+            person_sql = appendPersonInfo(cast) + appendPersonInfo(directors)
+            relation_sql = relationBetweenPersonMovie(cast, movies[i]['id']) + relationBetweenPersonMovie(directors, movies[i]['id'])
+            print(i, " movie people info get")
+            with open('../mysql/initdb.d/popular_people.sql','a+') as f:
+                f.write(person_sql)
+            with open('../mysql/initdb.d/popular_people_role.sql','a+') as f:
+                f.write(relation_sql)
         time.sleep(1)
-    person_sql = ""
-    relation_sql = ""
-    for i in range(0, len(movies)):
-        cast, directors = getCreditInfo(movies[i]['id'])
-        person_sql += appendPersonInfo(cast)
-        person_sql += appendPersonInfo(directors)
-        relation_sql += relationBetweenPersonMovie(cast, movies[i]['id'])
-        relation_sql += relationBetweenPersonMovie(directors, movies[i]['id'])
 
-    with open('../mysql/initdb.d/popular_people.sql','w+') as f:
-        f.write(person_sql)
-    with open('../mysql/initdb.d/popular_movie_credits.sql','w+') as f:
-        f.write(relation_sql)
     
 if __name__ == "__main__":
     global token 
