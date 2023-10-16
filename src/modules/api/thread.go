@@ -264,7 +264,7 @@ func RegistThread(c *gin.Context) error {
 func ChangeRecommendThread(c *gin.Context) error {
 	var reqBody RecommendForm
 
-	id, _ := c.Get(`id`)
+	user, _ := c.Get(`user`)
 
 	err := c.ShouldBind(&reqBody)
 
@@ -273,11 +273,11 @@ func ChangeRecommendThread(c *gin.Context) error {
 	}
 	db := storage.DB()
 	var is_recommended bool
-	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and id = ? `, reqBody.Thread_id, id).Scan(&is_recommended)
+	err = db.QueryRow(`select is_recommended from thread_recommend where thread_id = ? and id = ? `, reqBody.Thread_id, user).Scan(&is_recommended)
 
 	if err == sql.ErrNoRows {
 		// No row -> is_recommended : true
-		_, err = db.Exec(`Insert into thread_recommend (thread_id, id, is_recommended) values(?,?,true)`, reqBody.Thread_id, id)
+		_, err = db.Exec(`Insert into thread_recommend (thread_id, id, is_recommended) values(?,?,true)`, reqBody.Thread_id, user)
 
 		if err := ErrChecker.Check(err); err != nil {
 			return err
@@ -288,7 +288,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 	}
 	// Is_recommended -> is_recommended : false
 	if is_recommended == true {
-		_, err = db.Exec(`Update thread_recommend set is_recommended = false where thread_id = ? and id = ?`, reqBody.Thread_id, id)
+		_, err = db.Exec(`Update thread_recommend set is_recommended = false where thread_id = ? and id = ?`, reqBody.Thread_id, user)
 		if err := ErrChecker.Check(err); err != nil {
 			return err
 		}
@@ -296,7 +296,7 @@ func ChangeRecommendThread(c *gin.Context) error {
 		return nil
 	}
 	// Not is_recommneded -> is_recommend : true
-	_, err = db.Exec(`Update thread_recommend set is_recommended = true where thread_id = ? and id = ?`, reqBody.Thread_id, id)
+	_, err = db.Exec(`Update thread_recommend set is_recommended = true where thread_id = ? and id = ?`, reqBody.Thread_id, user)
 	if err := ErrChecker.Check(err); err != nil {
 		return err
 	}
