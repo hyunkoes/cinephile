@@ -57,7 +57,11 @@ func TokenCheck(c *gin.Context) {
 		fmt.Println(tokens)
 		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", COOKIE_DOMAIN, true, true)
-		fmt.Println(c.Cookie(`access_token`))
+		tk, err := c.Cookie(`access_token`)
+		if err != nil {
+			fmt.Print(err)
+		}
+		fmt.Println("Set Get , ", tk)
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
 		c.Set(`user`, user_id)
 		c.Next()
