@@ -8,6 +8,7 @@ import (
 	. "cinephile/modules/middleware"
 	. "cinephile/modules/storage"
 
+	"github.com/gin-contrib/cors"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -19,6 +20,9 @@ const port = ":4000"
 
 func Serve(mode int) { // local : 4000 호스팅 시작
 	r := gin.Default()
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"https://cinephile.site"} // 프론트엔드 서버 도메인
+	config.AllowCredentials = true                           // 쿠키를 허용
 	docs.SwaggerInfo.BasePath = "/api"
 	publicAPI := r.Group("/api")
 	authAPI := r.Group("/api")
