@@ -4,7 +4,6 @@ import (
 	. "cinephile/const"
 	"cinephile/modules/middleware/token"
 	"cinephile/modules/oauth"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -40,7 +39,6 @@ func TokenCheck(c *gin.Context) {
 			c.Abort()
 			return
 		}
-		fmt.Println(refresh_token, platform, "으로 액세스 토큰 재발급 시작")
 		// Refresh tokens by platform oauth server
 		tokens, err := token.RefreshAT(refresh_token, platform)
 		if err != nil {
@@ -69,20 +67,6 @@ func TokenCheck(c *gin.Context) {
 		// Set cookie for client ( response )
 		c.SetCookie("access_token", tokens.AccessToken, tokens.Expire, "/", COOKIE_DOMAIN, true, true)
 		user_id, err := oauth.GetID(tokens.AccessToken, platform)
-		cookie, err := c.Request.Cookie("access_token")
-
-		if err != nil {
-			// 쿠키를 찾을 수 없음
-			c.String(404, "쿠키를 찾을 수 없습니다.")
-			return
-		}
-
-		// SameSite 설정 가져오기
-		sameSite := cookie.SameSite
-
-		// SameSite 설정 값 출력
-		c.String(200, "SameSite 설정: %v", sameSite)
-		c.SetCookie("TEST1", "TEST", 10000, "/", COOKIE_DOMAIN, true, true)
 		c.Set(`user`, user_id)
 		c.Next()
 		return
